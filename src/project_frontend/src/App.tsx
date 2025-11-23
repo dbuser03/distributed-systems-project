@@ -1,12 +1,26 @@
-import React from 'react';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  StoryGalleryPage,
+  StoryEditorPage,
+  SearchPage,
+  UserPage,
+  StoryPage,
+} from "./pages";
+import { Layout } from "./components";
 
 export default function App(): JSX.Element {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <main className="prose text-center">
-        <h1>Welcome to Distributed Systems Project</h1>
-        <p className="text-gray-600">Frontend scaffolded with TypeScript + Tailwind.</p>
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<StoryGalleryPage />} />
+          <Route path="/story/:id" element={<StoryPage />} />
+          <Route path="/story-editor" element={<StoryEditorPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/user/:id" element={<UserPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
