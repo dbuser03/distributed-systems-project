@@ -7,6 +7,7 @@ export const mockStories = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-01",
     publisherId: "1",
+    tags: ["Corporate Fraud", "Financial Misconduct"],
   },
   {
     id: "2",
@@ -15,6 +16,7 @@ export const mockStories = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-02",
     publisherId: "2",
+    tags: ["Government Surveillance", "Privacy Violations"],
   },
   {
     id: "3",
@@ -23,6 +25,7 @@ export const mockStories = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-03",
     publisherId: "3",
+    tags: ["Healthcare Industry", "Safety Violations"],
   },
   {
     id: "4",
@@ -31,6 +34,7 @@ export const mockStories = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-04",
     publisherId: "4",
+    tags: ["Environmental Violations", "Waste Disposal"],
   },
   {
     id: "5",
@@ -39,6 +43,7 @@ export const mockStories = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-05",
     publisherId: "5",
+    tags: ["Military Contract Corruption", "Kickback Scheme"],
   },
   {
     id: "6",
@@ -47,5 +52,6 @@ export const mockStories = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: null,
     publisherId: "6",
+    tags: ["Tech Company Data Breach", "Privacy Breach"],
   },
 ];
