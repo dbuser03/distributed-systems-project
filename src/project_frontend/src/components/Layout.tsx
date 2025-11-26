@@ -7,7 +7,7 @@ function Layout() {
     <div className="drawer sm:drawer-open">
       <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content">
-        <div className="p-4 pb-20 sm:pb-4">
+        <div className="pb-20 sm:pb-4">
           <Outlet />
         </div>
       </div>

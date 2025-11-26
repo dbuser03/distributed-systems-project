@@ -1,4 +1,5 @@
-import React from "react";
+import React, { SVGProps } from "react";
+import { Link } from "react-router-dom";
 
 function Sidebar() {
   return (
@@ -10,7 +11,7 @@ function Sidebar() {
           <ul className="menu w-full grow">
             {/* List item */}
             <li>
-              <button>
+              <Link to="/">
                 {/* Home icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -28,37 +29,34 @@ function Sidebar() {
                 <span className="hidden group-hover/sidebar:inline opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                   Homepage
                 </span>
-              </button>
+              </Link>
             </li>
 
             {/* List item */}
             <li>
-              <button>
+              <Link to="/search">
                 {/* Settings icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                  fill="none"
-                  stroke="currentColor"
-                  className="my-1.5 inline-block size-4"
+                  viewBox="0 0 512 512"
+                  width="1em"
+                  height="1em"
                 >
-                  <path d="M20 7h-9"></path>
-                  <path d="M14 17H5"></path>
-                  <circle cx="17" cy="17" r="3"></circle>
-                  <circle cx="7" cy="7" r="3"></circle>
+                  <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    d="M469.297 439.13L347.982 317.816C370.466 288.907 384 252.707 384 213.334c0-94.104-76.562-170.667-170.666-170.667S42.667 119.23 42.667 213.334S119.23 384 213.334 384c39.373 0 75.573-13.534 104.481-36.018l121.316 121.315zm-255.963-97.796c-70.584 0-128-57.417-128-128c0-70.584 57.416-128 128-128c70.583 0 128 57.416 128 128c0 70.583-57.417 128-128 128"
+                  ></path>
                 </svg>
                 <span className="hidden group-hover/sidebar:inline opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
-                  Settings
+                  Search
                 </span>
-              </button>
+              </Link>
             </li>
 
             {/* List item */}
             <li>
-              <button>
+              <Link to="/user/1">
                 {/* Profile icon */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +74,7 @@ function Sidebar() {
                 <span className="hidden group-hover/sidebar:inline opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
                   Profile
                 </span>
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
@@ -85,7 +83,10 @@ function Sidebar() {
       {/* Mobile Dock */}
       <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-base-200 border-t border-base-300 z-50">
         <div className="flex justify-around items-center px-4 py-2">
-          <button className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group">
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+          >
             <svg
               className="size-[1.2em]"
               xmlns="http://www.w3.org/2000/svg"
@@ -102,30 +103,33 @@ function Sidebar() {
             <span className="text-xs opacity-70 group-hover:opacity-100">
               Home
             </span>
-          </button>
+          </Link>
 
-          <button className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group">
+          <Link
+            to="/search"
+            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+          >
             <svg
-              className="size-[1.2em]"
               xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              strokeWidth="2"
-              fill="none"
-              stroke="currentColor"
+              viewBox="0 0 512 512"
+              width="1em"
+              height="1em"
             >
-              <path d="M20 7h-9"></path>
-              <path d="M14 17H5"></path>
-              <circle cx="17" cy="17" r="3"></circle>
-              <circle cx="7" cy="7" r="3"></circle>
+              <path
+                fill="currentColor"
+                fillRule="evenodd"
+                d="M469.297 439.13L347.982 317.816C370.466 288.907 384 252.707 384 213.334c0-94.104-76.562-170.667-170.666-170.667S42.667 119.23 42.667 213.334S119.23 384 213.334 384c39.373 0 75.573-13.534 104.481-36.018l121.316 121.315zm-255.963-97.796c-70.584 0-128-57.417-128-128c0-70.584 57.416-128 128-128c70.583 0 128 57.416 128 128c0 70.583-57.417 128-128 128"
+              ></path>
             </svg>
             <span className="text-xs opacity-70 group-hover:opacity-100">
-              Settings
+              Search
             </span>
-          </button>
+          </Link>
 
-          <button className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group">
+          <Link
+            to="/user/1"
+            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+          >
             <svg
               className="size-[1.2em]"
               xmlns="http://www.w3.org/2000/svg"
@@ -142,7 +146,7 @@ function Sidebar() {
             <span className="text-xs opacity-70 group-hover:opacity-100">
               Profile
             </span>
-          </button>
+          </Link>
         </div>
       </div>
     </>
