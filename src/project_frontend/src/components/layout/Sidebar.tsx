@@ -56,6 +56,29 @@ function Sidebar() {
 
             {/* List item */}
             <li>
+              <Link to="/story-editor">
+                {/* Edit/Write icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                  fill="none"
+                  stroke="currentColor"
+                  className="my-1.5 inline-block size-4"
+                >
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span className="hidden group-hover/sidebar:inline opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
+                  Editor
+                </span>
+              </Link>
+            </li>
+
+            {/* List item */}
+            <li>
               <Link to="/user/1">
                 {/* Profile icon */}
                 <svg
@@ -123,6 +146,28 @@ function Sidebar() {
             </svg>
             <span className="text-xs opacity-70 group-hover:opacity-100">
               Search
+            </span>
+          </Link>
+
+          <Link
+            to="/story-editor"
+            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+          >
+            <svg
+              className="size-[1.2em]"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeWidth="2"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span className="text-xs opacity-70 group-hover:opacity-100">
+              Editor
             </span>
           </Link>
 

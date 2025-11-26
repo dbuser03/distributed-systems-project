@@ -5,12 +5,25 @@ function StoryLink({ story }: { story: Story }) {
   return (
     <React.Fragment>
       {/* Mobile: vertical layout, Large: horizontal with image right */}
-      <article className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-2 lg:border lg:p-4 lg:rounded-lg lg:border-base-200 hover:border-base-300 transition-colors">
-        <div className="flex-1 order-2 lg:order-1">
-          <h2 className="text-xl mb-1 text-primary">{story.title}</h2>
-          <p className="text-secondary">{story.preview}</p>
+      <article className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow">
+        <div className="card-body flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+          <div className="flex-1">
+            <h2 className="card-title text-primary">{story.title}</h2>
+            <p className="text-base-content/70 line-clamp-2">{story.preview}</p>
+            {story.tags && story.tags.length > 0 && (
+              <div className="card-actions mt-2">
+                {story.tags.slice(0, 3).map((tag) => (
+                  <div key={tag} className="badge badge-secondary badge-sm">
+                    {tag}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <figure className="w-full lg:w-48 lg:shrink-0">
+            <div className="w-full h-48 lg:h-32 bg-base-200 skeleton rounded-lg" />
+          </figure>
         </div>
-        <div className="w-full h-48 skeleton transition-none order-1 lg:order-2 mt-4 lg:mt-0 lg:ml-4 lg:w-48 lg:h-32 lg:shrink-0" />
       </article>
     </React.Fragment>
   );

@@ -28,22 +28,42 @@ function SearchPage() {
   return (
     <div className="min-h-full p-8">
       <div className="mb-8 max-w-5xl">
-        <h1 className="text-3xl mb-8">Search</h1>
-        <input
-          type="text"
-          value={search}
-          onChange={handleSearch}
-          placeholder="Search for a story"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        <div className="form-control">
+          <input
+            type="text"
+            value={search}
+            onChange={handleSearch}
+            placeholder="Search for a story"
+            className="input input-bordered w-full"
+          />
+        </div>
       </div>
 
       <section className="flex flex-col gap-4 max-w-5xl">
-        {results.map((story) => (
-          <Link key={story.id} to={`/story/${story.id}`}>
-            <StoryLink story={story} />
-          </Link>
-        ))}
+        {results.length === 0 && search ? (
+          <div className="alert alert-info">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              className="stroke-current shrink-0 w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span>No stories found matching "{search}"</span>
+          </div>
+        ) : (
+          results.map((story) => (
+            <Link key={story.id} to={`/story/${story.id}`}>
+              <StoryLink story={story} />
+            </Link>
+          ))
+        )}
       </section>
     </div>
   );

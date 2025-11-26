@@ -1,5 +1,7 @@
+import { Story } from "../types";
+
 // Mock whistleblower stories data - replace with actual data from backend later
-export const mockStories = [
+export const mockStories: Story[] = [
   {
     id: "1",
     title: "Corporate Fraud Exposed",
