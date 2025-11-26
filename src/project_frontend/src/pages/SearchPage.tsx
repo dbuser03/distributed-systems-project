@@ -27,7 +27,7 @@ function SearchPage() {
 
   return (
     <div className="min-h-full p-8">
-      <div>
+      <div className="mb-8 max-w-5xl">
         <h1 className="text-3xl mb-8">Search</h1>
         <input
           type="text"
@@ -38,19 +38,12 @@ function SearchPage() {
         />
       </div>
 
-      <section>
-        <h2 className="text-2xl mb-4">Results</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {results.map((story) => (
-            <Link
-              key={story.id}
-              to={`/story/${story.id}`}
-              className="block bg-white p-4 rounded-md shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              <StoryLink story={story} />
-            </Link>
-          ))}
-        </div>
+      <section className="flex flex-col gap-4 max-w-5xl">
+        {results.map((story) => (
+          <Link key={story.id} to={`/story/${story.id}`}>
+            <StoryLink story={story} />
+          </Link>
+        ))}
       </section>
     </div>
   );
