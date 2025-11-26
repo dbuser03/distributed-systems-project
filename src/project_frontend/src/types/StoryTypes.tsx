@@ -6,5 +6,5 @@ export type Story = {
   publishedAt: string | null;
   publisherId: string;
   //   SIC or GICS codes ??? https://www.naics.com/search/
-  tags?: string[];
+  tags: string[];
 };

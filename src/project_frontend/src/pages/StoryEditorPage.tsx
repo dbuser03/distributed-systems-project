@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { mockStories } from "../hooks";
+import { Story } from "../types";
 
 function StoryEditorPage() {
   const navigate = useNavigate();
@@ -11,6 +13,23 @@ function StoryEditorPage() {
     tags: [] as string[],
     tagInput: "",
   });
+
+  useEffect(() => {
+    if (!id) return;
+
+    const story: Story | undefined = mockStories.find(
+      (story: Story) => story.id === id
+    );
+    if (!story) return;
+
+    setFormData({
+      title: story.title,
+      preview: story.preview,
+      text: story.text,
+      tags: story.tags,
+      tagInput: "",
+    });
+  }, [id]);
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && formData.tagInput.trim()) {
