@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Story } from "../types";
-import { mockStories } from "../data";
+import { ISICSectionKey, ISICSectionsType, Story } from "../types";
+import { ISICSections, mockStories } from "../data";
 
 function StoryEditorPage() {
   const navigate = useNavigate();
@@ -9,9 +9,9 @@ function StoryEditorPage() {
   const [formData, setFormData] = useState({
     title: "",
     preview: "",
-    text: "",
-    tags: [] as string[],
-    tagInput: "",
+    content: "",
+    industryTags: [] as ISICSectionKey[],
+    industryTagInput: "",
   });
 
   useEffect(() => {
@@ -25,20 +25,27 @@ function StoryEditorPage() {
     setFormData({
       title: story.title,
       preview: story.preview,
-      text: story.text,
-      tags: story.tags,
-      tagInput: "",
+      content: story.content,
+      industryTags: story.industryTags,
+      industryTagInput: "",
     });
   }, [id]);
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && formData.tagInput.trim()) {
+    if (e.key === "Enter" && formData.industryTagInput.trim()) {
       e.preventDefault();
-      if (!formData.tags.includes(formData.tagInput.trim())) {
+      if (
+        !formData.industryTags.includes(
+          formData.industryTagInput.trim() as ISICSectionKey
+        )
+      ) {
         setFormData({
           ...formData,
-          tags: [...formData.tags, formData.tagInput.trim()],
-          tagInput: "",
+          industryTags: [
+            ...formData.industryTags,
+            formData.industryTagInput.trim() as ISICSectionKey,
+          ],
+          industryTagInput: "",
         });
       }
     }
@@ -47,18 +54,18 @@ function StoryEditorPage() {
   const handleRemoveTag = (tagToRemove: string) => {
     setFormData({
       ...formData,
-      tags: formData.tags.filter((tag) => tag !== tagToRemove),
+      industryTags: formData.industryTags.filter((tag) => tag !== tagToRemove),
     });
   };
 
   const handleSaveDraft = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.text) return;
+    if (!formData.title || !formData.content) return;
   };
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.text || !formData.preview) return;
+    if (!formData.title || !formData.content || !formData.preview) return;
   };
 
   return (
@@ -108,23 +115,23 @@ function StoryEditorPage() {
           <input
             type="text"
             id="tags"
-            value={formData.tagInput}
+            value={formData.industryTagInput}
             onChange={(e) =>
-              setFormData({ ...formData, tagInput: e.target.value })
+              setFormData({ ...formData, industryTagInput: e.target.value })
             }
             onKeyDown={handleAddTag}
             className="input input-bordered w-full"
             placeholder="Type a tag and press Enter"
           />
-          {formData.tags.length > 0 && (
+          {formData.industryTags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.tags.map((tag) => (
+              {formData.industryTags.map((tag: ISICSectionKey) => (
                 <div
                   key={tag}
                   className="badge badge-secondary cursor-pointer"
                   onClick={() => handleRemoveTag(tag)}
                 >
-                  {tag} ×
+                  {ISICSections[tag]} ×
                 </div>
               ))}
             </div>
@@ -132,13 +139,15 @@ function StoryEditorPage() {
         </div>
 
         <div className="form-control">
-          <label htmlFor="text" className="label">
+          <label htmlFor="content" className="label">
             <span className="label-text">Story Content</span>
           </label>
           <textarea
-            id="text"
-            value={formData.text}
-            onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+            id="content"
+            value={formData.content}
+            onChange={(e) =>
+              setFormData({ ...formData, content: e.target.value })
+            }
             className="textarea textarea-bordered w-full"
             rows={15}
             placeholder="Write your story here..."
@@ -151,7 +160,7 @@ function StoryEditorPage() {
             type="submit"
             onClick={handleSaveDraft}
             className="btn btn-primary"
-            disabled={!formData.title || !formData.text}
+            disabled={!formData.title || !formData.content}
           >
             Save Draft
           </button>
@@ -159,7 +168,7 @@ function StoryEditorPage() {
             type="submit"
             onClick={handlePublish}
             className="btn btn-success"
-            disabled={!formData.title || !formData.text || !formData.preview}
+            disabled={!formData.title || !formData.content || !formData.preview}
           >
             Publish
           </button>

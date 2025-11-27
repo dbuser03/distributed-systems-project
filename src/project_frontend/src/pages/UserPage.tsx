@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { mockStories } from "../data";
+import { ISICSections, mockStories } from "../data";
+import { ISICSectionKey } from "../types";
 
 function UserPage() {
   const { id } = useParams<{ id: string }>();
@@ -52,16 +53,18 @@ function UserPage() {
                       <p className="text-sm text-base-content/70 line-clamp-1">
                         {story.preview}
                       </p>
-                      {story.tags && story.tags.length > 0 && (
+                      {story.industryTags && story.industryTags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {story.tags.slice(0, 3).map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-xs text-base-content/60"
-                            >
-                              [{tag}]
-                            </span>
-                          ))}
+                          {story.industryTags
+                            .slice(0, 3)
+                            .map((tag: ISICSectionKey) => (
+                              <span
+                                key={tag}
+                                className="text-xs text-base-content/60"
+                              >
+                                [{tag}]
+                              </span>
+                            ))}
                         </div>
                       )}
                     </div>
@@ -96,16 +99,18 @@ function UserPage() {
                       <p className="text-sm text-base-content/70 line-clamp-1">
                         {story.preview}
                       </p>
-                      {story.tags && story.tags.length > 0 && (
+                      {story.industryTags && story.industryTags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {story.tags.slice(0, 3).map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-xs text-base-content/60"
-                            >
-                              [{tag}]
-                            </span>
-                          ))}
+                          {story.industryTags
+                            .slice(0, 3)
+                            .map((tag: ISICSectionKey) => (
+                              <span
+                                key={tag}
+                                className="text-xs text-base-content/60"
+                              >
+                                [{ISICSections[tag]}]
+                              </span>
+                            ))}
                         </div>
                       )}
                     </div>

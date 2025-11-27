@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { mockStories } from "../data";
+import { ISICSections, mockStories } from "../data";
+import { ISICSectionKey } from "../types";
 
 function StoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -53,14 +54,14 @@ function StoryPage() {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 ></path>
               </svg>
-              {new Date(story.publishedAt).toLocaleDateString()}
+              {new Date(Number(story.publishedAt)).toLocaleDateString()}
             </div>
           )}
-          {story.tags && story.tags.length > 0 && (
+          {story.industryTags && story.industryTags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {story.tags.map((tag) => (
+              {story.industryTags.map((tag: ISICSectionKey) => (
                 <span key={tag} className="badge badge-secondary badge-sm">
-                  {tag}
+                  {ISICSections[tag]}
                 </span>
               ))}
             </div>
@@ -71,7 +72,7 @@ function StoryPage() {
         <div className="card bg-base-100">
           <div className="card-body p-0">
             <p className="text-base-content leading-relaxed text-lg whitespace-pre-line">
-              {story.text}
+              {story.content}
             </p>
           </div>
         </div>

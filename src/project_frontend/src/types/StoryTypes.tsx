@@ -35,7 +35,7 @@ export type Story = {
   publisherId: string;
 };
 
-type ISICSectionKey =
+export type ISICSectionKey =
   | "A"
   | "B"
   | "C"

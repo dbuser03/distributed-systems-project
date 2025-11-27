@@ -1,5 +1,6 @@
 import React from "react";
 import { Story } from "../types";
+import { ISICSections } from "../data";
 
 function StoryLink({ story }: { story: Story }) {
   return (
@@ -10,11 +11,11 @@ function StoryLink({ story }: { story: Story }) {
           <div className="flex-1">
             <h2 className="card-title text-primary">{story.title}</h2>
             <p className="text-base-content/70 line-clamp-2">{story.preview}</p>
-            {story.tags && story.tags.length > 0 && (
+            {story.industryTags && story.industryTags.length > 0 && (
               <div className="card-actions mt-2">
-                {story.tags.slice(0, 3).map((tag) => (
+                {story.industryTags.slice(0, 3).map((tag) => (
                   <div key={tag} className="badge badge-secondary badge-sm">
-                    {tag}
+                    {ISICSections[tag]}
                   </div>
                 ))}
               </div>
