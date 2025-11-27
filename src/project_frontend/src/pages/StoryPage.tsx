@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { mockStories } from "../hooks";
+import { mockStories } from "../data";
 
 function StoryPage() {
   const { id } = useParams<{ id: string }>();

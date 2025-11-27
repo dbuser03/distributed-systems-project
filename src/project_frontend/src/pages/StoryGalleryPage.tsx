@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { mockStories } from "../hooks";
+import { mockStories } from "../data";
 
 function StoryGalleryPage() {
   return (

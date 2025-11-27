@@ -1,4 +1,28 @@
-import { Story } from "../types";
+import { ISICSectionsType, Story } from "../types";
+
+export const ISICSections: ISICSectionsType = {
+  A: "Agriculture, Forestry and Fishing",
+  B: "Mining and Quarrying",
+  C: "Manufacturing",
+  D: "Electricity, Gas, Steam and Air Conditioning Supply",
+  E: "Water Supply; Sewerage, Waste Management and Remediation Activities",
+  F: "Construction",
+  G: "Wholesale and Retail Trade; Repair of Motor Vehicles and Motorcycles",
+  H: "Transportation and Storage",
+  I: "Accommodation and Food Service Activities",
+  J: "Information and Communication",
+  K: "Financial and Insurance Activities",
+  L: "Real Estate Activities",
+  M: "Professional, Scientific and Technical Activities",
+  N: "Administrative and Support Service Activities",
+  O: "Public Administration and Defence; Compulsory Social Security",
+  P: "Education",
+  Q: "Human Health and Social Work Activities",
+  R: "Arts, Entertainment and Recreation",
+  S: "Other Service Activities",
+  T: "Activities of Households as Employers; Undifferentiated Goods- and Services-Producing Activities of Households for Own Use",
+  U: "Activities of Extraterritorial Organizations and Bodies",
+};
 
 // Mock whistleblower stories data - replace with actual data from backend later
 export const mockStories: Story[] = [
@@ -9,7 +33,7 @@ export const mockStories: Story[] = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-01",
     publisherId: "1",
-    tags: ["Corporate Fraud", "Financial Misconduct"],
+    tags: ["A", "B"],
   },
   {
     id: "2",
@@ -18,7 +42,7 @@ export const mockStories: Story[] = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-02",
     publisherId: "2",
-    tags: ["Government Surveillance", "Privacy Violations"],
+    tags: ["C", "D"],
   },
   {
     id: "3",
@@ -27,7 +51,7 @@ export const mockStories: Story[] = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-03",
     publisherId: "3",
-    tags: ["Healthcare Industry", "Safety Violations"],
+    tags: ["E", "F"],
   },
   {
     id: "4",
@@ -36,7 +60,7 @@ export const mockStories: Story[] = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-04",
     publisherId: "4",
-    tags: ["Environmental Violations", "Waste Disposal"],
+    tags: ["G", "H"],
   },
   {
     id: "5",
@@ -45,7 +69,7 @@ export const mockStories: Story[] = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: "2025-01-05",
     publisherId: "5",
-    tags: ["Military Contract Corruption", "Kickback Scheme"],
+    tags: ["I", "J"],
   },
   {
     id: "6",
@@ -54,6 +78,6 @@ export const mockStories: Story[] = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     publishedAt: null,
     publisherId: "6",
-    tags: ["Tech Company Data Breach", "Privacy Breach"],
+    tags: ["K", "L"],
   },
 ];

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { mockStories } from "../hooks";
+import { mockStories } from "../data";
 import { StoryLink } from "../components";
 
 // Implement better search functionality later
