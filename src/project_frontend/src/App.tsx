@@ -16,7 +16,7 @@ export default function App(): JSX.Element {
         <Route path="/" element={<Layout />}>
           <Route index element={<StoryGalleryPage />} />
           <Route path="/story/:id" element={<StoryPage />} />
-          <Route path="/story-editor" element={<StoryEditorPage />} />
+          <Route path="/story-editor/:id?" element={<StoryEditorPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/user/:id" element={<UserPage />} />
         </Route>
