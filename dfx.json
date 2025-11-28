@@ -1,20 +1,19 @@
 {
   "canisters": {
-    "project_backend": {
-      "main": "src/project_backend/main.mo",
-      "type": "motoko"
-    },
     "document_store": {
       "type": "motoko",
-      "main": "src/project_backend/Document_store.mo"
+      "main": "src/project_backend/document_store.mo"
     },
     "forum": {
       "type": "motoko",
-      "main": "src/project_backend/forum.mo"
+      "main": "src/project_backend/forum.mo",
+      "dependencies": [
+        "document_store"
+      ]
     },
     "project_frontend": {
       "dependencies": [
-        "project_backend"
+        "forum"
       ],
       "source": [
         "src/project_frontend/dist"

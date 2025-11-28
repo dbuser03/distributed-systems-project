@@ -28,7 +28,24 @@ module {
     tags : [Text];
     file : ?Blob;
     fileType : ?Text;
-    comments : ?[Text];
+    comments : ?[CommentId];
+    likes : Nat;
+    dislikes : Nat;
+    createdAt : Time.Time;
+  };
+
+  public type CommentedThread = {
+    id : ThreadId;
+    author : Principal;
+    title : Text;
+    abstract : Text;
+    body : Text;
+    tags : [Text];
+    file : ?Blob;
+    fileType : ?Text;
+    comments : ?[Comment];
+    likes : Nat;
+    dislikes : Nat;
     createdAt : Time.Time;
   };
 
@@ -37,6 +54,13 @@ module {
     threadId : ThreadId;
     author : Principal;
     body : Text;
+    likes : Nat;
+    dislikes : Nat;
     createdAt : Time.Time;
   };
-}
+
+  public type FeedbackInput = {
+    author : Principal;
+    voteType : Text;
+  };
+};
