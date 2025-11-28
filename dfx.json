@@ -4,6 +4,14 @@
       "main": "src/project_backend/main.mo",
       "type": "motoko"
     },
+    "document_store": {
+      "type": "motoko",
+      "main": "src/project_backend/Document_store.mo"
+    },
+    "forum": {
+      "type": "motoko",
+      "main": "src/project_backend/forum.mo"
+    },
     "project_frontend": {
       "dependencies": [
         "project_backend"
