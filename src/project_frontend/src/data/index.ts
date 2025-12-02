@@ -3,30 +3,54 @@ import {
   Story,
   StoryStatus,
   EncryptionMetadata,
+  CountriesType,
 } from "../types";
 
 export const ISICSections: ISICSectionsType = {
-  A: "Agriculture, Forestry and Fishing",
-  B: "Mining and Quarrying",
+  A: "Agriculture & Fishing",
+  B: "Mining & Quarrying",
   C: "Manufacturing",
-  D: "Electricity, Gas, Steam and Air Conditioning Supply",
-  E: "Water Supply; Sewerage, Waste Management and Remediation Activities",
+  D: "Electricity & Gas Supply",
+  E: "Water & Waste Management",
   F: "Construction",
-  G: "Wholesale and Retail Trade; Repair of Motor Vehicles and Motorcycles",
-  H: "Transportation and Storage",
-  I: "Accommodation and Food Service Activities",
-  J: "Information and Communication",
-  K: "Financial and Insurance Activities",
-  L: "Real Estate Activities",
-  M: "Professional, Scientific and Technical Activities",
-  N: "Administrative and Support Service Activities",
-  O: "Public Administration and Defence; Compulsory Social Security",
+  G: "Wholesale & Retail Trade",
+  H: "Transportation & Storage",
+  I: "Accommodation & Food Services",
+  J: "Information & Communication",
+  K: "Financial & Insurance",
+  L: "Real Estate",
+  M: "Professional & Technical Services",
+  N: "Administrative & Support Services",
+  O: "Public Administration & Defence",
   P: "Education",
-  Q: "Human Health and Social Work Activities",
-  R: "Arts, Entertainment and Recreation",
-  S: "Other Service Activities",
-  T: "Activities of Households as Employers; Undifferentiated Goods- and Services-Producing Activities of Households for Own Use",
-  U: "Activities of Extraterritorial Organizations and Bodies",
+  Q: "Health & Social Work",
+  R: "Arts & Entertainment",
+  S: "Other Services",
+  T: "Household Activities",
+  U: "Extraterritorial Organizations",
+};
+
+export const Countries: CountriesType = {
+  US: "United States",
+  GB: "United Kingdom",
+  DE: "Germany",
+  FR: "France",
+  IT: "Italy",
+  ES: "Spain",
+  NL: "Netherlands",
+  BE: "Belgium",
+  CH: "Switzerland",
+  AT: "Austria",
+  AU: "Australia",
+  CA: "Canada",
+  JP: "Japan",
+  CN: "China",
+  IN: "India",
+  BR: "Brazil",
+  MX: "Mexico",
+  ZA: "South Africa",
+  NG: "Nigeria",
+  OTHER: "Other",
 };
 
 // Helper function to convert date string to BigInt timestamp (milliseconds)
@@ -65,6 +89,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-01-16"),
     publishedAt: dateToBigInt("2025-01-16"),
     industryTags: ["A", "M"],
+    country: "US",
     publisherId: "501",
   },
   {
@@ -79,6 +104,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-02-05"),
     publishedAt: dateToBigInt("2025-02-05"),
     industryTags: ["J", "D"],
+    country: "GB",
     publisherId: "377",
   },
   {
@@ -93,6 +119,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-02-21"),
     publishedAt: dateToBigInt("2025-02-21"),
     industryTags: ["F", "N"],
+    country: "DE",
     publisherId: "612",
   },
   {
@@ -107,6 +134,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-03-12"),
     publishedAt: dateToBigInt("2025-03-12"),
     industryTags: ["C", "E", "O"],
+    country: "IT",
     publisherId: "825",
   },
   {
@@ -121,6 +149,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-03-28"),
     publishedAt: dateToBigInt("2025-03-28"),
     industryTags: ["Q", "L"],
+    country: "FR",
     publisherId: "701",
   },
   {
@@ -135,6 +164,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt(null),
     publishedAt: null,
     industryTags: ["P", "K"],
+    country: "AU",
     publisherId: "443",
   },
   {
@@ -149,6 +179,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-01-31"),
     publishedAt: dateToBigInt("2025-01-31"),
     industryTags: ["B", "N"],
+    country: "ZA",
     publisherId: "504",
   },
   {
@@ -163,6 +194,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-02-17"),
     publishedAt: dateToBigInt("2025-02-17"),
     industryTags: ["H", "G"],
+    country: "US",
     publisherId: "394",
   },
   {
@@ -177,6 +209,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-02-26"),
     publishedAt: dateToBigInt("2025-02-26"),
     industryTags: ["K", "O"],
+    country: "CH",
     publisherId: "678",
   },
   {
@@ -191,6 +224,7 @@ export const mockStories: Story[] = [
     createdAt: getCreatedAt("2025-03-05"),
     publishedAt: dateToBigInt("2025-03-05"),
     industryTags: ["R", "S"],
+    country: "GB",
     publisherId: "187",
   },
 ];
