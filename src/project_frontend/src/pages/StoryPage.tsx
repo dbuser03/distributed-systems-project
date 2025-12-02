@@ -29,55 +29,57 @@ function StoryPage() {
     );
   }
   return (
-    <article className="min-h-full p-8 max-w-5xl">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{story.title}</h1>
-        <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-base-300">
-          <Link
-            to={`/user/${story.publisherId}`}
-            className="badge badge-outline badge-primary hover:badge-primary cursor-pointer"
-          >
-            Publisher {story.publisherId}
-          </Link>
-          {story.publishedAt && (
-            <div className="badge badge-ghost">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                className="stroke-current w-4 h-4 mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                ></path>
-              </svg>
-              {new Date(Number(story.publishedAt)).toLocaleDateString()}
+    <div className="min-h-full p-8 flex flex-col items-center">
+      <article className="w-full max-w-5xl">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold mb-8">{story.title}</h1>
+          <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-base-300">
+            <Link
+              to={`/user/${story.publisherId}`}
+              className="badge badge-outline badge-primary hover:badge-primary cursor-pointer"
+            >
+              Publisher {story.publisherId}
+            </Link>
+            {story.publishedAt && (
+              <div className="badge badge-ghost">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  className="stroke-current w-4 h-4 mr-1"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  ></path>
+                </svg>
+                {new Date(Number(story.publishedAt)).toLocaleDateString()}
+              </div>
+            )}
+            {story.industryTags && story.industryTags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {story.industryTags.map((tag: ISICSectionKey) => (
+                  <span key={tag} className="badge badge-secondary badge-sm">
+                    {ISICSections[tag]}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </header>
+        <div className="prose max-w-none">
+          <div className="card bg-base-100">
+            <div className="card-body p-0">
+              <p className="text-base-content leading-relaxed text-lg whitespace-pre-line">
+                {story.content}
+              </p>
             </div>
-          )}
-          {story.industryTags && story.industryTags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {story.industryTags.map((tag: ISICSectionKey) => (
-                <span key={tag} className="badge badge-secondary badge-sm">
-                  {ISICSections[tag]}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </header>
-      <div className="prose max-w-none">
-        <div className="card bg-base-100">
-          <div className="card-body p-0">
-            <p className="text-base-content leading-relaxed text-lg whitespace-pre-line">
-              {story.content}
-            </p>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
   );
 }
 

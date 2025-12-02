@@ -53,13 +53,11 @@ export const Countries: CountriesType = {
   OTHER: "Other",
 };
 
-// Helper function to convert date string to BigInt timestamp (milliseconds)
 const dateToBigInt = (dateStr: string | null): BigInt | null => {
   if (!dateStr) return null;
   return BigInt(new Date(dateStr).getTime());
 };
 
-// Helper function to get createdAt (assume created 7 days before published, or current date if not published)
 const getCreatedAt = (publishedAt: string | null): BigInt => {
   if (publishedAt) {
     const published = new Date(publishedAt).getTime();
@@ -69,13 +67,11 @@ const getCreatedAt = (publishedAt: string | null): BigInt => {
   return BigInt(Date.now() - 7 * 24 * 60 * 60 * 1000);
 };
 
-// Default encryption metadata for mock data
 const defaultEncryption: EncryptionMetadata = {
   isEncrypted: false,
   algorithm: "NONE",
 };
 
-// Improved mock whistleblower stories data
 export const mockStories: Story[] = [
   {
     id: "1",
