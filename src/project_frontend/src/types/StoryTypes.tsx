@@ -29,11 +29,16 @@ export type Story = {
   publishedAt: BigInt | null;
   // ISIC sections - industries
   industryTags: ISICSectionKey[];
-  // Country Code tags
-  // countryTags: CountryCodeKey[];
+  country: CountryCode;
 
   publisherId: string;
+
+  // Voting
+  upvotes: number;
+  downvotes: number;
 };
+
+export type VoteType = "up" | "down" | null;
 
 export type ISICSectionKey =
   | "A"
@@ -60,4 +65,30 @@ export type ISICSectionKey =
 
 export type ISICSectionsType = {
   [key in ISICSectionKey]: string;
+};
+
+export type CountryCode =
+  | "US"
+  | "GB"
+  | "DE"
+  | "FR"
+  | "IT"
+  | "ES"
+  | "NL"
+  | "BE"
+  | "CH"
+  | "AT"
+  | "AU"
+  | "CA"
+  | "JP"
+  | "CN"
+  | "IN"
+  | "BR"
+  | "MX"
+  | "ZA"
+  | "NG"
+  | "OTHER";
+
+export type CountriesType = {
+  [key in CountryCode]: string;
 };

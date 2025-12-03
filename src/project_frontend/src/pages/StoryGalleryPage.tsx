@@ -1,27 +1,77 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { mockStories } from "../data";
+import {
+  StoryLink,
+  SearchInput,
+  StoryFilters,
+  EmptyState,
+} from "../components/ui";
+import { useStoryFilters } from "../hooks";
 
 function StoryGalleryPage() {
+  const {
+    filters,
+    calendarMonth,
+    filteredStories,
+    setSearch,
+    toggleTag,
+    toggleCountry,
+    setDateRange,
+    setCalendarMonth,
+    setVerifiedOnly,
+    clearAllFilters,
+    hasActiveFilters,
+  } = useStoryFilters(mockStories);
+
+  const showEmptyState = filteredStories.length === 0 && hasActiveFilters;
+
   return (
-    <div className="min-h-full p-8">
-      <h1 className="text-3xl mb-8 max-w-5xl">Top Stories</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
-        {mockStories.map((story) => (
-          <Link key={story.id} to={`/story/${story.id}`}>
-            <div className="card bg-base-100 shadow-md hover:shadow-xl transition-shadow h-full flex flex-col">
-              <figure>
-                <div className="w-full h-48 bg-base-200 skeleton"></div>
-              </figure>
-              <div className="card-body flex-1 flex flex-col">
-                <h2 className="card-title">{story.title}</h2>
-                <p className="text-base-content/70 line-clamp-3 flex-1">
-                  {story.preview}
-                </p>
-              </div>
-            </div>
-          </Link>
-        ))}
+    <div className="min-h-full p-8 flex flex-col items-center">
+      <div className="w-full max-w-5xl">
+        <h1 className="text-4xl font-bold mb-8">
+          {filters.search ? "Search Results" : "Top Stories"}
+        </h1>
+
+        <SearchInput
+          value={filters.search}
+          onChange={setSearch}
+          placeholder="Search for a story"
+        />
+
+        <StoryFilters
+          selectedTags={filters.selectedTags}
+          selectedCountries={filters.selectedCountries}
+          dateRange={filters.dateRange}
+          calendarMonth={calendarMonth}
+          verifiedOnly={filters.verifiedOnly}
+          onToggleTag={toggleTag}
+          onToggleCountry={toggleCountry}
+          onDateRangeChange={setDateRange}
+          onCalendarMonthChange={setCalendarMonth}
+          onVerifiedChange={setVerifiedOnly}
+          onClearFilters={clearAllFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
+
+        <section className="flex flex-col gap-4">
+          {showEmptyState ? (
+            <EmptyState
+              search={filters.search}
+              hasFilters={
+                filters.selectedTags.length > 0 ||
+                filters.selectedCountries.length > 0 ||
+                !!filters.dateRange?.from
+              }
+            />
+          ) : (
+            filteredStories.map((story) => (
+              <Link key={story.id} to={`/story/${story.id}`}>
+                <StoryLink story={story} />
+              </Link>
+            ))
+          )}
+        </section>
       </div>
     </div>
   );
