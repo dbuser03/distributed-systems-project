@@ -8,6 +8,7 @@ import Array "mo:base/Array";
 import Int "mo:base/Int";
 import Bool "mo:base/Bool";
 import Principal "mo:base/Principal";
+import Order "mo:base/Order";
 
 // Logic module: pure functions over the stores.
 module {
@@ -120,7 +121,23 @@ module {
       };
     };
 
-    result;
+    let sorted = Array.sort<Comment>(
+    result,
+    func (a : Comment, b : Comment) : Order.Order {
+      let sa = a.likes - a.dislikes;
+      let sb = b.likes - b.dislikes;
+
+      if (sa > sb) {
+        #less;
+      } else if (sa < sb) {
+        #greater;
+      } else {
+        #equal;
+      };
+    }
+  );
+
+  sorted;
   };
 
   public func getThread(
