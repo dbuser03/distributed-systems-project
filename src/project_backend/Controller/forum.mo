@@ -1,9 +1,10 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Array "mo:base/Array";
-import Utils "Utils/utils";
-import Types "Model/types";
-import DocumentStore "canister:document_store";
+import Principal "mo:base/Principal";
+import Utils "../Utils/utils";
+import Types "../Model/types";
+import DocumentStore "../Services/document_store";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -15,6 +16,11 @@ persistent actor Forum {
   public type Comment = Types.Comment;
   public type CommentInput = Types.CommentInput;
   public type CommentedThread = Types.CommentedThread;
+  public type FeedbackInput = Types.FeedbackInput;
+
+
+  transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
+  transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
   /// Reverse index on tags (fixed-size list of 1-char Text tags)
   /// tag -> list of thread ids that have that tag
@@ -39,27 +45,41 @@ persistent actor Forum {
     };
   };
 
-  public shared func createThread(input : ThreadInput) : async ThreadId {
-    let id = await DocumentStore.createThread(input);
+  public shared func createThread(caller : Principal, input : ThreadInput) : async ThreadId {
+    let id = await DocumentStore.createThread(threadsStore, caller, input);
     indexThreadTags(input.tags, id);
     id;
   };
 
-  public shared func createComment(input : CommentInput) : async { #ok : CommentId; #err : Int } {
-    await DocumentStore.createComment(input);
+  public shared func createComment(caller: Principal, input : CommentInput) : async { #ok : CommentId; #err : Int } {
+    await DocumentStore.createComment(threadsStore, commentsStore, caller, input);
   };
 
   // single thread with only references to comments
   public shared func getThread(
     id : ThreadId
   ) : async { #ok : Thread; #err : Int } {
-    await DocumentStore.getThread(id);
+    await DocumentStore.getThread(threadsStore, id);
   };
 
   public shared func getCommentedThread(
     id : ThreadId
   ) : async { #ok : CommentedThread; #err : Int } {
-    await DocumentStore.getCommentedThread(id);
+    await DocumentStore.getCommentedThread(threadsStore, commentsStore, id);
+  };
+
+  public shared func getComments(ids : [CommentId]) : async [Comment] {
+    await DocumentStore.getComments(commentsStore, ids);
+  };
+
+  public shared func addFeedbackThread(input : FeedbackInput,
+    threadId : ThreadId,) : async { #status : Int } {
+      await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
+  };
+
+  public shared func addFeedbackComment(input : FeedbackInput,
+    commentId : CommentId,) : async { #status : Int } {
+      await DocumentStore.addFeedbackComment(commentsStore, input, commentId);
   };
 
   // This does not return the hydrated comments as it is intended to be used when retrieving the list of results that then can be clicked and opened.
@@ -73,7 +93,7 @@ persistent actor Forum {
         var result : [Thread] = [];
 
         for (tid in ids.vals()) {
-          let res = await DocumentStore.getThread(tid);
+          let res = await DocumentStore.getThread(threadsStore, tid);
 
           switch (res) {
             case (#ok(val)) {

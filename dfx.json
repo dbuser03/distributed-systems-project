@@ -1,15 +1,8 @@
 {
   "canisters": {
-    "document_store": {
-      "type": "motoko",
-      "main": "src/project_backend/document_store.mo"
-    },
     "forum": {
       "type": "motoko",
-      "main": "src/project_backend/forum.mo",
-      "dependencies": [
-        "document_store"
-      ]
+      "main": "src/project_backend/Controller/forum.mo"
     },
     "project_frontend": {
       "dependencies": [

@@ -5,4 +5,4 @@
 - [x] handle liking / disliking (missing call to user state)
 - [] add inverted index for likes
 - [] handle saving files
-- [] 
+- [] implement user data structure and logic
