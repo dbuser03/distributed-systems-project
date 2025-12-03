@@ -115,4 +115,9 @@ persistent actor Forum {
       };
     };
   };
+
+  public query (message) func whoami() : async Principal {
+    message.caller;
+  };
+  
 };

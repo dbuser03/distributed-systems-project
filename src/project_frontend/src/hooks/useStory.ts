@@ -18,7 +18,7 @@ export function useStory(id: string | undefined): UseStoryResult {
       };
     }
 
-    // In a real app, this would be an async fetch
+    // In a real app, this would be an async fetch (not if using amazing motoko backend)
     const story = mockStories.find((s) => s.id === id);
 
     return {
