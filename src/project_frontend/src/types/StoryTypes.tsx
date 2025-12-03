@@ -32,7 +32,13 @@ export type Story = {
   country: CountryCode;
 
   publisherId: string;
+
+  // Voting
+  upvotes: number;
+  downvotes: number;
 };
+
+export type VoteType = "up" | "down" | null;
 
 export type ISICSectionKey =
   | "A"

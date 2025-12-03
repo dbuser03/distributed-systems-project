@@ -1,10 +1,18 @@
 import React from "react";
-import { Story } from "../types";
-import { ISICSections } from "../data";
+import { Story } from "../../types";
+import { ISICSections } from "../../data";
+import VoteButtons from "./voting/VoteButtons";
 
 function StoryLink({ story }: { story: Story }) {
   return (
     <article className="card lg:card-side bg-base-100 shadow-sm hover:shadow-lg transition-shadow lg:h-64 w-full rounded-t-lg lg:rounded-lg">
+      <div className="flex items-center pl-4">
+        <VoteButtons
+          storyId={story.id}
+          initialUpvotes={story.upvotes}
+          initialDownvotes={story.downvotes}
+        />
+      </div>
       <div className="card-body">
         <h2 className="card-title text-primary">{story.title}</h2>
         <p className="text-base-content/70 line-clamp-3">{story.preview}</p>

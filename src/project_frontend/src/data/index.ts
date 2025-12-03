@@ -87,6 +87,8 @@ export const mockStories: Story[] = [
     industryTags: ["A", "M"],
     country: "US",
     publisherId: "501",
+    upvotes: 342,
+    downvotes: 23,
   },
   {
     id: "2",
@@ -102,6 +104,8 @@ export const mockStories: Story[] = [
     industryTags: ["J", "D"],
     country: "GB",
     publisherId: "377",
+    upvotes: 891,
+    downvotes: 45,
   },
   {
     id: "3",
@@ -117,6 +121,8 @@ export const mockStories: Story[] = [
     industryTags: ["F", "N"],
     country: "DE",
     publisherId: "612",
+    upvotes: 567,
+    downvotes: 34,
   },
   {
     id: "4",
@@ -132,6 +138,8 @@ export const mockStories: Story[] = [
     industryTags: ["C", "E", "O"],
     country: "IT",
     publisherId: "825",
+    upvotes: 1203,
+    downvotes: 89,
   },
   {
     id: "5",
@@ -147,6 +155,8 @@ export const mockStories: Story[] = [
     industryTags: ["Q", "L"],
     country: "FR",
     publisherId: "701",
+    upvotes: 2456,
+    downvotes: 167,
   },
   {
     id: "6",
@@ -162,6 +172,8 @@ export const mockStories: Story[] = [
     industryTags: ["P", "K"],
     country: "AU",
     publisherId: "443",
+    upvotes: 78,
+    downvotes: 12,
   },
   {
     id: "7",
@@ -177,6 +189,8 @@ export const mockStories: Story[] = [
     industryTags: ["B", "N"],
     country: "ZA",
     publisherId: "504",
+    upvotes: 445,
+    downvotes: 28,
   },
   {
     id: "8",
@@ -192,6 +206,8 @@ export const mockStories: Story[] = [
     industryTags: ["H", "G"],
     country: "US",
     publisherId: "394",
+    upvotes: 1567,
+    downvotes: 203,
   },
   {
     id: "9",
@@ -207,6 +223,8 @@ export const mockStories: Story[] = [
     industryTags: ["K", "O"],
     country: "CH",
     publisherId: "678",
+    upvotes: 934,
+    downvotes: 56,
   },
   {
     id: "10",
@@ -222,5 +240,7 @@ export const mockStories: Story[] = [
     industryTags: ["R", "S"],
     country: "GB",
     publisherId: "187",
+    upvotes: 289,
+    downvotes: 41,
   },
 ];

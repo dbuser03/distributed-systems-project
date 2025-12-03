@@ -6,7 +6,7 @@ import {
   UserPage,
   StoryPage,
 } from "./pages";
-import { Layout } from "./components";
+import { Layout } from "./components/ui";
 
 export default function App(): JSX.Element {
   return (
