@@ -2,10 +2,10 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Array "mo:base/Array";
 import Principal "mo:base/Principal";
-import Order "mo:base/Order";
 import Utils "../Utils/utils";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
+import ReverseIndexes "../Services/reverse_indexes";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -30,11 +30,12 @@ persistent actor Forum {
 
   var scoreIndexOrdered : [(Int, ThreadId)] = [];
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
-  var scoreIndexSorted : Bool = false;
+  var isScoreIndexSorted : Bool = false;
 
   public shared func createThread(caller : Principal, input : ThreadInput) : async ThreadId {
     let id = await DocumentStore.createThread(threadsStore, caller, input);
-    indexThreadTags(input.tags, id);
+    ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
+    ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
     id;
   };
 
@@ -52,6 +53,12 @@ persistent actor Forum {
     await DocumentStore.getThread(threadsStore, id);
   };
 
+  public shared func getThreads(
+    ids : [ThreadId]
+  ) : async [Thread] {
+    DocumentStore.getThreads(threadsStore, ids);
+  };
+
   public shared func getCommentedThread(
     id : ThreadId
   ) : async { #ok : CommentedThread; #err : Int } {
@@ -66,7 +73,17 @@ persistent actor Forum {
     input : FeedbackInput,
     threadId : ThreadId,
   ) : async { #status : Int } {
-    await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
+    let res = await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
+    switch (res) {
+      case (#status(code)) {
+        #status(code);
+      };
+      case (#newScore(val)) {
+        ReverseIndexes.updateScoreOfThread(scoreIndexHash, val, threadId);
+        isScoreIndexSorted := false;
+        #status(200);
+      };
+    };
   };
 
   public shared func addFeedbackComment(
@@ -76,43 +93,25 @@ persistent actor Forum {
     await DocumentStore.addFeedbackComment(commentsStore, input, commentId);
   };
 
-  // This does not return the hydrated comments as it is intended to be used when retrieving the list of results that then can be clicked and opened.
   public shared func getThreadsByTag(tag : Text) : async [Thread] {
-    switch (tagIndex.get(tag)) {
-      case (null) {
-        return [];
-      };
-
-      case (?ids) {
-        var result : [Thread] = [];
-
-        for (tid in ids.vals()) {
-          let res = await DocumentStore.getThread(threadsStore, tid);
-
-          switch (res) {
-            case (#ok(val)) {
-              result := Array.append<Thread>(result, [val]);
-            };
-            case (#err(_)) {};
-          };
-        };
-
-        return result;
-      };
-    };
+    await ReverseIndexes.getThreadsByTag(threadsStore, tagIndex, tag);
   };
 
-  func indexThreadTags(tags : [Text], id : ThreadId) {
-    for (tag in tags.vals()) {
-      switch (tagIndex.get(tag)) {
-        case (null) {
-          tagIndex.put(tag, [id]);
-        };
-        case (?ids) {
-          let updated = Array.append<ThreadId>(ids, [id]);
-          tagIndex.put(tag, updated);
-        };
-      };
+  public func getThreadsByScore(
+    startIdx : Int,
+    endIdx : Int,
+  ) : async [Thread] {
+    if (not isScoreIndexSorted) {
+      scoreIndexOrdered := ReverseIndexes.orderScoreIndex(scoreIndexHash);
+      isScoreIndexSorted := true;
     };
-  };
+
+    ReverseIndexes.sliceByScore(
+      threadsStore,
+      scoreIndexOrdered,
+      startIdx,
+      endIdx,
+    );
+  }
+
 };

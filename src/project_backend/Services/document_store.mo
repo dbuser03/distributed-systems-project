@@ -139,6 +139,23 @@ module {
     };
   };
 
+  public func getThreads(
+    threadsStore : HashMap.HashMap<ThreadId, Thread>,
+    ids : [ThreadId],
+  ) : [Thread] {
+    var result : [Thread] = [];
+    for (id in ids.vals()) {
+      let res = threadsStore.get(id);
+      switch (res) {
+        case (null) {};
+        case (?thread) {
+          result := Array.append(result, [thread]);
+        };
+      };
+    };
+    return result;
+  };
+
   public func getCommentedThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     commentsStore : HashMap.HashMap<CommentId, Comment>,
@@ -196,7 +213,7 @@ module {
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     input : FeedbackInput,
     threadId : ThreadId,
-  ) : async { #status : Int } {
+  ) : async { #status : Int; #newScore : Int } {
     switch (threadsStore.get(threadId)) {
       case (null) {
         #status(404);
@@ -232,7 +249,7 @@ module {
           createdAt = thread.createdAt;
         };
         threadsStore.put(thread.id, updatedThread);
-        #status(200);
+        #newScore(result.likes - result.dislikes);
       };
     };
   };
