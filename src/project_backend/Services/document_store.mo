@@ -9,8 +9,12 @@ import Int "mo:base/Int";
 import Bool "mo:base/Bool";
 import Principal "mo:base/Principal";
 import Order "mo:base/Order";
+import StableMemory "mo:base/ExperimentalStableMemory";
+import Blob "mo:base/Blob";
+import Nat64 "mo:base/Nat64";
+import Nat "mo:base/Nat";
 
-// Logic module: pure functions over the stores.
+
 module {
   public type Thread = Types.Thread;
   public type ThreadInput = Types.ThreadInput;
@@ -20,13 +24,16 @@ module {
   public type CommentId = Types.CommentId;
   public type CommentedThread = Types.CommentedThread;
   public type FeedbackInput = Types.FeedbackInput;
+  public type BlobRef = Types.BlobRef;
 
   public func createThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     caller : Principal,
     input : ThreadInput,
+    base : Nat64,
   ) : async ThreadId {
     let id = await Utils.newId();
+     let fileRefs : ?[BlobRef] = storeFiles(input.file, base);
 
     let doc : Thread = {
       id = id;
@@ -35,7 +42,7 @@ module {
       abstract = input.abstract;
       body = input.body;
       tags = input.tags;
-      file = input.file;
+      file = fileRefs;
       fileType = input.fileType;
       comments = null;
       likes = 0;
@@ -307,6 +314,76 @@ module {
         };
         commentsStore.put(comment.id, updatedComment);
         #status(200);
+      };
+    };
+  };
+
+  func ensureCapacity(files : ?[Blob], base: Nat64) : { #ok : Nat64; #err : Text;} {
+    switch (files) {
+      case (null) {
+        #ok(0);
+      };
+      case (?fs) {
+        let n = fs.size();
+        if (n == 0) {
+          return #ok(0);
+        };
+        var total : Nat64 = 0;
+        for (b in fs.vals()) {
+          let len : Nat64 = Nat64.fromNat(b.size());
+          if (total + len < total) {
+            return #err("Total size overflow");
+          };
+
+          total += len;
+        };
+        let requiredEnd : Nat64 = base + total;
+        if (requiredEnd < base) {
+          return #err("Offset overflow");
+        };
+        let pageSize : Nat64 = 65536;
+        let neededPages : Nat64 = (requiredEnd + pageSize - 1) / pageSize;
+        let currentPages : Nat64 = StableMemory.size();
+        if (neededPages <= currentPages) {
+          #ok(total);
+        } else {
+          let delta : Nat64 = neededPages - currentPages;
+          let old = StableMemory.grow(delta);
+          if (old == 0xFFFF_FFFF_FFFF_FFFF) {
+            #err("Stable memory grow failed");
+          } else {
+            #ok(total);
+          };
+        };
+      };
+    };
+  };
+
+  public func storeFiles(files : ?[Blob], base: Nat64) : ?[BlobRef] {
+    switch (files) {
+      case (null) {
+        null;
+      };
+      case (?fs) {
+        let n : Nat = fs.size();
+        if (n == 0) {
+          return ?[];
+        };
+        let refs = Array.tabulate<BlobRef>(
+          n,
+          func(i : Nat) : BlobRef {
+            let b : Blob = fs[i];
+            let len : Nat64 = Nat64.fromNat(b.size());
+            let start : Nat64 = base;
+            StableMemory.storeBlob(start, b);
+            {
+              offset = start;
+              length = len;
+            };
+          },
+        );
+
+        ?refs;
       };
     };
   };

@@ -5,13 +5,18 @@ module {
   public type ThreadId = Text;
   public type CommentId = Text;
 
+  public type BlobRef = {
+  offset : Nat64;
+  length : Nat64;
+};
+
   public type ThreadInput = {
     title : Text;
     abstract : Text;
     body : Text;
     tags : [Text];
-    file : ?Blob;
-    fileType : ?Text; // "image/png", "application/pdf",
+    file : ?[Blob];
+    fileType : ?[Text]; // "image/png", "application/pdf",
   };
 
   public type CommentInput = {
@@ -26,8 +31,8 @@ module {
     abstract : Text;
     body : Text;
     tags : [Text];
-    file : ?Blob;
-    fileType : ?Text;
+    file : ?[BlobRef];
+    fileType : ?[Text];
     comments : ?[CommentId];
     likes : Nat;
     dislikes : Nat;
@@ -41,8 +46,8 @@ module {
     abstract : Text;
     body : Text;
     tags : [Text];
-    file : ?Blob;
-    fileType : ?Text;
+    file : ?[BlobRef];
+    fileType : ?[Text];
     comments : ?[Comment];
     likes : Nat;
     dislikes : Nat;

@@ -20,6 +20,8 @@ persistent actor Forum {
   public type FeedbackInput = Types.FeedbackInput;
 
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
+  // start for the storage of blobs
+  stable var base : Nat64 = 0;
   transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
   transient var tagIndex = HashMap.HashMap<Text, [ThreadId]>(
@@ -32,11 +34,20 @@ persistent actor Forum {
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
   var isScoreIndexSorted : Bool = false;
 
-  public shared func createThread(caller : Principal, input : ThreadInput) : async ThreadId {
+  public shared func createThread(caller : Principal, input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
+    var lastStoredBatchSize : Nat64 = 0;
+    switch (ensureCapacity(files)) {
+      case (#ok totalLen) {
+        lastStoredBatchSize := totalLen;
+      };
+      case (#err msg) {
+        #err("Error while saving linked documents");
+      };
+    };
     let id = await DocumentStore.createThread(threadsStore, caller, input);
     ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
     ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
-    id;
+    #id(id);
   };
 
   public shared func createComment(caller : Principal, input : CommentInput) : async {
