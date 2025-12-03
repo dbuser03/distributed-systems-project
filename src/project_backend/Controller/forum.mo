@@ -2,6 +2,7 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Array "mo:base/Array";
 import Principal "mo:base/Principal";
+import Order "mo:base/Order";
 import Utils "../Utils/utils";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
@@ -18,32 +19,18 @@ persistent actor Forum {
   public type CommentedThread = Types.CommentedThread;
   public type FeedbackInput = Types.FeedbackInput;
 
-
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
   transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
-  /// Reverse index on tags (fixed-size list of 1-char Text tags)
-  /// tag -> list of thread ids that have that tag
-  var tagIndexStore : [(Text, [ThreadId])] = [];
   transient var tagIndex = HashMap.HashMap<Text, [ThreadId]>(
     20,
     Text.equal,
     Text.hash,
   );
 
-  func indexThreadTags(tags : [Text], id : ThreadId) {
-    for (tag in tags.vals()) {
-      switch (tagIndex.get(tag)) {
-        case (null) {
-          tagIndex.put(tag, [id]);
-        };
-        case (?ids) {
-          let updated = Array.append<ThreadId>(ids, [id]);
-          tagIndex.put(tag, updated);
-        };
-      };
-    };
-  };
+  var scoreIndexOrdered : [(Int, ThreadId)] = [];
+  transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
+  var scoreIndexSorted : Bool = false;
 
   public shared func createThread(caller : Principal, input : ThreadInput) : async ThreadId {
     let id = await DocumentStore.createThread(threadsStore, caller, input);
@@ -51,7 +38,10 @@ persistent actor Forum {
     id;
   };
 
-  public shared func createComment(caller: Principal, input : CommentInput) : async { #ok : CommentId; #err : Int } {
+  public shared func createComment(caller : Principal, input : CommentInput) : async {
+    #ok : CommentId;
+    #err : Int;
+  } {
     await DocumentStore.createComment(threadsStore, commentsStore, caller, input);
   };
 
@@ -72,14 +62,18 @@ persistent actor Forum {
     await DocumentStore.getComments(commentsStore, ids);
   };
 
-  public shared func addFeedbackThread(input : FeedbackInput,
-    threadId : ThreadId,) : async { #status : Int } {
-      await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
+  public shared func addFeedbackThread(
+    input : FeedbackInput,
+    threadId : ThreadId,
+  ) : async { #status : Int } {
+    await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
   };
 
-  public shared func addFeedbackComment(input : FeedbackInput,
-    commentId : CommentId,) : async { #status : Int } {
-      await DocumentStore.addFeedbackComment(commentsStore, input, commentId);
+  public shared func addFeedbackComment(
+    input : FeedbackInput,
+    commentId : CommentId,
+  ) : async { #status : Int } {
+    await DocumentStore.addFeedbackComment(commentsStore, input, commentId);
   };
 
   // This does not return the hydrated comments as it is intended to be used when retrieving the list of results that then can be clicked and opened.
@@ -104,6 +98,20 @@ persistent actor Forum {
         };
 
         return result;
+      };
+    };
+  };
+
+  func indexThreadTags(tags : [Text], id : ThreadId) {
+    for (tag in tags.vals()) {
+      switch (tagIndex.get(tag)) {
+        case (null) {
+          tagIndex.put(tag, [id]);
+        };
+        case (?ids) {
+          let updated = Array.append<ThreadId>(ids, [id]);
+          tagIndex.put(tag, updated);
+        };
       };
     };
   };
