@@ -1,11 +1,10 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
-import Array "mo:base/Array";
 import Principal "mo:base/Principal";
-import Order "mo:base/Order";
-import Utils "../Utils/utils";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
+import ReverseIndexes "../Services/reverse_indexes";
+import Region "mo:base/Region";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -16,10 +15,14 @@ persistent actor Forum {
   public type ThreadInput = Types.ThreadInput;
   public type Comment = Types.Comment;
   public type CommentInput = Types.CommentInput;
-  public type CommentedThread = Types.CommentedThread;
+  public type HydratedThread = Types.HydratedThread;
   public type FeedbackInput = Types.FeedbackInput;
 
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
+  // start for the storage of blobs
+  var fileRegion : Region.Region = Region.new();
+  var base : Nat64 = 0;
+
   transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
   transient var tagIndex = HashMap.HashMap<Text, [ThreadId]>(
@@ -30,19 +33,35 @@ persistent actor Forum {
 
   var scoreIndexOrdered : [(Int, ThreadId)] = [];
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
-  var scoreIndexSorted : Bool = false;
+  var isScoreIndexSorted : Bool = false;
 
-  public shared func createThread(caller : Principal, input : ThreadInput) : async ThreadId {
-    let id = await DocumentStore.createThread(threadsStore, caller, input);
-    indexThreadTags(input.tags, id);
-    id;
+
+
+
+
+
+  public shared (msg) func createThread(input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
+    let caller = msg.caller;
+    var lastStoredBatchSize : Nat64 = 0;
+    switch (DocumentStore.ensureCapacity(fileRegion, input.file, base)) {
+      case (#ok totalLen) {
+        lastStoredBatchSize := totalLen;
+      };
+      case (#err _) {
+        return #err("Error while saving linked documents");
+      };
+    };
+    let id = await DocumentStore.createThread(threadsStore, caller, input, fileRegion, base);
+    ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
+    ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
+    #id(id);
   };
 
-  public shared func createComment(caller : Principal, input : CommentInput) : async {
+  public shared (msg) func createComment(input : CommentInput) : async {
     #ok : CommentId;
     #err : Int;
   } {
-    await DocumentStore.createComment(threadsStore, commentsStore, caller, input);
+    await DocumentStore.createComment(threadsStore, commentsStore, msg.caller, input);
   };
 
   // single thread with only references to comments
@@ -52,72 +71,104 @@ persistent actor Forum {
     await DocumentStore.getThread(threadsStore, id);
   };
 
-  public shared func getCommentedThread(
+  public shared func getThreads(
+    ids : [ThreadId]
+  ) : async [Thread] {
+    DocumentStore.getThreads(threadsStore, ids);
+  };
+
+  public shared func getHydratedThread(
     id : ThreadId
-  ) : async { #ok : CommentedThread; #err : Int } {
-    await DocumentStore.getCommentedThread(threadsStore, commentsStore, id);
+  ) : async { #ok : HydratedThread; #err : Int } {
+    await DocumentStore.getHydratedThread(threadsStore, commentsStore, id, fileRegion);
   };
 
   public shared func getComments(ids : [CommentId]) : async [Comment] {
     await DocumentStore.getComments(commentsStore, ids);
   };
 
-  public shared func addFeedbackThread(
+  public shared (msg) func addFeedbackThread(
     input : FeedbackInput,
     threadId : ThreadId,
   ) : async { #status : Int } {
-    await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
+    let caller = msg.caller;
+    let res = await DocumentStore.addFeedbackThread(threadsStore, caller, input, threadId);
+    switch (res) {
+      case (#status(code)) {
+        #status(code);
+      };
+      case (#newScore(val)) {
+        ReverseIndexes.updateScoreOfThread(scoreIndexHash, val, threadId);
+        isScoreIndexSorted := false;
+        #status(200);
+      };
+    };
   };
 
-  public shared func addFeedbackComment(
+  public shared (msg) func addFeedbackComment(
     input : FeedbackInput,
     commentId : CommentId,
   ) : async { #status : Int } {
-    await DocumentStore.addFeedbackComment(commentsStore, input, commentId);
+    let caller = msg.caller;
+    await DocumentStore.addFeedbackComment(commentsStore, caller, input, commentId);
   };
 
-  // This does not return the hydrated comments as it is intended to be used when retrieving the list of results that then can be clicked and opened.
-  public shared func getThreadsByTag(tag : Text) : async [Thread] {
-    switch (tagIndex.get(tag)) {
-      case (null) {
-        return [];
-      };
-
-      case (?ids) {
-        var result : [Thread] = [];
-
-        for (tid in ids.vals()) {
-          let res = await DocumentStore.getThread(threadsStore, tid);
-
-          switch (res) {
-            case (#ok(val)) {
-              result := Array.append<Thread>(result, [val]);
-            };
-            case (#err(_)) {};
-          };
-        };
-
-        return result;
-      };
-    };
+  public shared func getThreadsByTags(tags : [Text]) : async [Thread] {
+    await ReverseIndexes.getThreadsByTags(threadsStore, tagIndex, tags);
   };
 
-  func indexThreadTags(tags : [Text], id : ThreadId) {
-    for (tag in tags.vals()) {
-      switch (tagIndex.get(tag)) {
-        case (null) {
-          tagIndex.put(tag, [id]);
-        };
-        case (?ids) {
-          let updated = Array.append<ThreadId>(ids, [id]);
-          tagIndex.put(tag, updated);
-        };
-      };
+  public func getThreadsByScore(
+    startIdx : Int,
+    endIdx : Int,
+  ) : async [Thread] {
+    if (not isScoreIndexSorted) {
+      scoreIndexOrdered := ReverseIndexes.orderScoreIndex(scoreIndexHash);
+      isScoreIndexSorted := true;
     };
+
+    ReverseIndexes.sliceByScore(
+      threadsStore,
+      scoreIndexOrdered,
+      startIdx,
+      endIdx,
+    );
   };
 
   public query (message) func whoami() : async Principal {
     message.caller;
   };
-  
+
+
+    public shared (msg) func deleteThread(
+    id : ThreadId,
+  ) : async (status : Int) {
+    switch (threadsStore.get(id)) {
+      case (null) {
+        return 404;
+      };
+      case (?thread) {
+        if (thread.author != msg.caller) {
+          return 401;
+        };
+        switch (thread.file) {
+          case (null) {};
+          case (?fileRefs) {
+            base := DocumentStore.deleteFilesOfThread(base, fileRefs);
+          };
+        };
+        switch (thread.comments) {
+          case (null) {};
+          case (?commentIds) {
+            DocumentStore.deleteCommentsOfThread(commentsStore, commentIds);
+          };
+        };
+        ignore threadsStore.remove(id);
+        return 204;
+      };
+    };
+  };
+
+  public shared (msg) func deleteComment(commentId : CommentId)  : async ( status : Int ) {
+    await DocumentStore.deleteComment(threadsStore, commentsStore, msg.caller, commentId);
+  }; 
 };
