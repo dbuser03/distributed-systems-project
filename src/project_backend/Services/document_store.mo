@@ -318,7 +318,7 @@ module {
     };
   };
 
-  func ensureCapacity(files : ?[Blob], base: Nat64) : { #ok : Nat64; #err : Text;} {
+  public func ensureCapacity(files : ?[Blob], base: Nat64) : { #ok : Nat64; #err : Text;} {
     switch (files) {
       case (null) {
         #ok(0);
