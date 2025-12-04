@@ -35,6 +35,11 @@ persistent actor Forum {
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
   var isScoreIndexSorted : Bool = false;
 
+
+
+
+
+
   public shared (msg) func createThread(input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
     let caller = msg.caller;
     var lastStoredBatchSize : Nat64 = 0;
@@ -56,8 +61,7 @@ persistent actor Forum {
     #ok : CommentId;
     #err : Int;
   } {
-    let caller = msg.caller;
-    await DocumentStore.createComment(threadsStore, commentsStore, caller, input);
+    await DocumentStore.createComment(threadsStore, commentsStore, msg.caller, input);
   };
 
   // single thread with only references to comments
@@ -133,4 +137,38 @@ persistent actor Forum {
   public query (message) func whoami() : async Principal {
     message.caller;
   };
+
+
+    public shared (msg) func deleteThread(
+    id : ThreadId,
+  ) : async (status : Int) {
+    switch (threadsStore.get(id)) {
+      case (null) {
+        return 404;
+      };
+      case (?thread) {
+        if (thread.author != msg.caller) {
+          return 401;
+        };
+        switch (thread.file) {
+          case (null) {};
+          case (?fileRefs) {
+            base := DocumentStore.deleteFilesOfThread(base, fileRefs);
+          };
+        };
+        switch (thread.comments) {
+          case (null) {};
+          case (?commentIds) {
+            DocumentStore.deleteCommentsOfThread(commentsStore, commentIds);
+          };
+        };
+        ignore threadsStore.remove(id);
+        return 204;
+      };
+    };
+  };
+
+  public shared (msg) func deleteComment(commentId : CommentId)  : async ( status : Int ) {
+    await DocumentStore.deleteComment(threadsStore, commentsStore, msg.caller, commentId);
+  }; 
 };

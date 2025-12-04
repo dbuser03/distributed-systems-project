@@ -192,8 +192,7 @@ module {
         #err(404);
       };
       case (?baseThread) {
-      let hydratedComments : ?[Comment] =
-        switch (baseThread.comments) {
+        let hydratedComments : ?[Comment] = switch (baseThread.comments) {
           case (null) {
             null;
           };
@@ -203,8 +202,7 @@ module {
           };
         };
 
-      let hydratedFile : ?[Blob] =
-        switch (baseThread.file) {
+        let hydratedFile : ?[Blob] = switch (baseThread.file) {
           case (null) {
             null;
           };
@@ -213,25 +211,25 @@ module {
           };
         };
 
-      let hydrated : HydratedThread = {
-        id = baseThread.id;
-        author = baseThread.author;
-        title = baseThread.title;
-        abstract = baseThread.abstract;
-        body = baseThread.body;
-        tags = baseThread.tags;
-        file = hydratedFile;
-        fileType = baseThread.fileType;
-        comments = hydratedComments;
-        likes = baseThread.likes;
-        dislikes = baseThread.dislikes;
-        createdAt = baseThread.createdAt;
-      };
+        let hydrated : HydratedThread = {
+          id = baseThread.id;
+          author = baseThread.author;
+          title = baseThread.title;
+          abstract = baseThread.abstract;
+          body = baseThread.body;
+          tags = baseThread.tags;
+          file = hydratedFile;
+          fileType = baseThread.fileType;
+          comments = hydratedComments;
+          likes = baseThread.likes;
+          dislikes = baseThread.dislikes;
+          createdAt = baseThread.createdAt;
+        };
 
-      #ok(hydrated);
+        #ok(hydrated);
+      };
     };
   };
-};
 
   public func addFeedbackThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
@@ -400,30 +398,119 @@ module {
   };
 
   public func readFiles(
-  region : Region.Region,
-  refs   : ?[BlobRef],
-) : ?[Blob] {
-  switch (refs) {
-    case (null) {
-      null;
-    };
-    case (?rs) {
-      let n = rs.size();
-      if (n == 0) {
-        return ?[];
+    region : Region.Region,
+    refs : ?[BlobRef],
+  ) : ?[Blob] {
+    switch (refs) {
+      case (null) {
+        null;
       };
+      case (?rs) {
+        let n = rs.size();
+        if (n == 0) {
+          return ?[];
+        };
 
-      let blobs = Array.tabulate<Blob>(
-        n,
-        func (i : Nat) : Blob {
-          let r = rs[i];
-          let size : Nat = Nat64.toNat(r.length);
-          Region.loadBlob(region, r.offset, size);
-        },
-      );
+        let blobs = Array.tabulate<Blob>(
+          n,
+          func(i : Nat) : Blob {
+            let r = rs[i];
+            let size : Nat = Nat64.toNat(r.length);
+            Region.loadBlob(region, r.offset, size);
+          },
+        );
 
-      ?blobs;
+        ?blobs;
+      };
+    };
+  };
+
+  public func deleteFilesOfThread(
+    base : Nat64,
+    refs : [BlobRef],
+  ) : (newBase : Nat64) {
+    var removed : Nat64 = 0;
+
+    for (r in refs.vals()) {
+      removed += r.length;
+    };
+    if (removed > base) {
+      0;
+    } else {
+      base - removed;
+    };
+  };
+
+  public func deleteCommentsOfThread(
+    commentsStore : HashMap.HashMap<CommentId, Comment>,
+    ids : [CommentId],
+  ) : () {
+    for (cid in ids.vals()) {
+      ignore commentsStore.remove(cid);
+    };
+  };
+
+
+  public func deleteComment(
+  threadsStore : HashMap.HashMap<ThreadId, Thread>,
+  commentsStore : HashMap.HashMap<CommentId, Comment>,
+  caller : Principal,
+  commentId : CommentId,
+) : async ( status : Int ) {
+  switch (commentsStore.get(commentId)) {
+    case (null) {
+      return (404);
+    };
+    case (?comm) {
+      if (comm.author != caller) {
+        return 403;
+      };
+      switch (threadsStore.get(comm.threadId)) {
+        case (null) {
+          ignore commentsStore.remove(commentId);
+          return 204;
+        };
+
+        case (?thread) {
+          let updatedCommentsOpt : ?[CommentId] = switch (thread.comments) {
+            case (null) {
+              null;
+            };
+            case (?list) {
+              let filtered = Array.filter<CommentId>(
+                list,
+                func (cid : CommentId) : Bool {
+                  cid != commentId;
+                },
+              );
+              if (filtered.size() == 0) {
+                null;
+              } else {
+                ?filtered;
+              };
+            };
+          };
+          let updatedThread : Thread = {
+            id = thread.id;
+            author = thread.author;
+            title = thread.title;
+            abstract = thread.abstract;
+            body = thread.body;
+            tags = thread.tags;
+            file = thread.file;
+            fileType = thread.fileType;
+            comments = updatedCommentsOpt;
+            likes = thread.likes;
+            dislikes = thread.dislikes;
+            createdAt = thread.createdAt;
+          };
+          threadsStore.put(thread.id, updatedThread);
+          ignore commentsStore.remove(commentId);
+          return 204;
+        };
+      };
     };
   };
 }
+
 };

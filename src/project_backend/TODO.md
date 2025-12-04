@@ -5,4 +5,5 @@
 - [x] handle liking / disliking (missing call to user state)
 - [X] add inverted index for likes
 - [X] handle saving files
+- [X] delete threads / comments
 - [] implement user data structure and logic
