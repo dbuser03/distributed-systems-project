@@ -3,6 +3,6 @@
 - [x] Save comments checking that the thread exists 
 - [x] Retrieve threads based on tags
 - [x] handle liking / disliking (missing call to user state)
-- [] add inverted index for likes
-- [] handle saving files
+- [X] add inverted index for likes
+- [X] handle saving files
 - [] implement user data structure and logic

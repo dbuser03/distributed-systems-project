@@ -13,25 +13,34 @@ module {
   public type ThreadInput = Types.ThreadInput;
   public type Comment = Types.Comment;
   public type CommentInput = Types.CommentInput;
-  public type CommentedThread = Types.CommentedThread;
+  public type HydratedThread = Types.HydratedThread;
   public type FeedbackInput = Types.FeedbackInput;
 
   // This does not return the hydrated comments as it is intended to be used when retrieving the list of results that then can be clicked and opened.
-  public func getThreadsByTag(
-    threadsStore : HashMap.HashMap<ThreadId, Thread>,
-    tagIndex : HashMap.HashMap<Text, [ThreadId]>,
-    tag : Text,
-  ) : async [Thread] {
-    switch (tagIndex.get(tag)) {
-      case (null) {
-        return [];
-      };
+  public func getThreadsByTags(
+  threadsStore : HashMap.HashMap<ThreadId, Thread>,
+  tagIndex : HashMap.HashMap<Text, [ThreadId]>,
+  tags : [Text],
+) : async [Thread] {
 
+  let seen = HashMap.HashMap<ThreadId, ()>(10, Text.equal, Text.hash);
+  for (tag in tags.vals()) {
+    switch (tagIndex.get(tag)) {
+      case (null) {};
       case (?ids) {
-        return DocumentStore.getThreads(threadsStore, ids);
+        for (tid in ids.vals()) {
+          seen.put(tid, ());
+        };
       };
     };
   };
+
+  var collected : [ThreadId] = [];
+  for ((tid, _) in seen.entries()) {
+    collected := Array.append(collected, [tid]);
+  };
+  return DocumentStore.getThreads(threadsStore, collected);
+};
 
   public func indexThreadTags(
     tagIndex : HashMap.HashMap<Text, [ThreadId]>,

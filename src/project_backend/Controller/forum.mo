@@ -4,6 +4,7 @@ import Principal "mo:base/Principal";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
+import Region "mo:base/Region";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -14,12 +15,14 @@ persistent actor Forum {
   public type ThreadInput = Types.ThreadInput;
   public type Comment = Types.Comment;
   public type CommentInput = Types.CommentInput;
-  public type CommentedThread = Types.CommentedThread;
+  public type HydratedThread = Types.HydratedThread;
   public type FeedbackInput = Types.FeedbackInput;
 
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
   // start for the storage of blobs
+  var fileRegion : Region.Region = Region.new();
   var base : Nat64 = 0;
+
   transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
   transient var tagIndex = HashMap.HashMap<Text, [ThreadId]>(
@@ -32,9 +35,10 @@ persistent actor Forum {
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
   var isScoreIndexSorted : Bool = false;
 
-  public shared func createThread(caller : Principal, input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
+  public shared (msg) func createThread(input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
+    let caller = msg.caller;
     var lastStoredBatchSize : Nat64 = 0;
-    switch (DocumentStore.ensureCapacity(input.file, base)) {
+    switch (DocumentStore.ensureCapacity(fileRegion, input.file, base)) {
       case (#ok totalLen) {
         lastStoredBatchSize := totalLen;
       };
@@ -42,16 +46,17 @@ persistent actor Forum {
         return #err("Error while saving linked documents");
       };
     };
-    let id = await DocumentStore.createThread(threadsStore, caller, input, base);
+    let id = await DocumentStore.createThread(threadsStore, caller, input, fileRegion, base);
     ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
     ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
     #id(id);
   };
 
-  public shared func createComment(caller : Principal, input : CommentInput) : async {
+  public shared (msg) func createComment(input : CommentInput) : async {
     #ok : CommentId;
     #err : Int;
   } {
+    let caller = msg.caller;
     await DocumentStore.createComment(threadsStore, commentsStore, caller, input);
   };
 
@@ -68,21 +73,22 @@ persistent actor Forum {
     DocumentStore.getThreads(threadsStore, ids);
   };
 
-  public shared func getCommentedThread(
+  public shared func getHydratedThread(
     id : ThreadId
-  ) : async { #ok : CommentedThread; #err : Int } {
-    await DocumentStore.getCommentedThread(threadsStore, commentsStore, id);
+  ) : async { #ok : HydratedThread; #err : Int } {
+    await DocumentStore.getHydratedThread(threadsStore, commentsStore, id, fileRegion);
   };
 
   public shared func getComments(ids : [CommentId]) : async [Comment] {
     await DocumentStore.getComments(commentsStore, ids);
   };
 
-  public shared func addFeedbackThread(
+  public shared (msg) func addFeedbackThread(
     input : FeedbackInput,
     threadId : ThreadId,
   ) : async { #status : Int } {
-    let res = await DocumentStore.addFeedbackThread(threadsStore, input, threadId);
+    let caller = msg.caller;
+    let res = await DocumentStore.addFeedbackThread(threadsStore, caller, input, threadId);
     switch (res) {
       case (#status(code)) {
         #status(code);
@@ -95,15 +101,16 @@ persistent actor Forum {
     };
   };
 
-  public shared func addFeedbackComment(
+  public shared (msg) func addFeedbackComment(
     input : FeedbackInput,
     commentId : CommentId,
   ) : async { #status : Int } {
-    await DocumentStore.addFeedbackComment(commentsStore, input, commentId);
+    let caller = msg.caller;
+    await DocumentStore.addFeedbackComment(commentsStore, caller, input, commentId);
   };
 
-  public shared func getThreadsByTag(tag : Text) : async [Thread] {
-    await ReverseIndexes.getThreadsByTag(threadsStore, tagIndex, tag);
+  public shared func getThreadsByTags(tags : [Text]) : async [Thread] {
+    await ReverseIndexes.getThreadsByTags(threadsStore, tagIndex, tags);
   };
 
   public func getThreadsByScore(

@@ -39,14 +39,14 @@ module {
     createdAt : Time.Time;
   };
 
-  public type CommentedThread = {
+  public type HydratedThread = {
     id : ThreadId;
     author : Principal;
     title : Text;
     abstract : Text;
     body : Text;
     tags : [Text];
-    file : ?[BlobRef];
+    file : ?[Blob];
     fileType : ?[Text];
     comments : ?[Comment];
     likes : Nat;
@@ -65,7 +65,6 @@ module {
   };
 
   public type FeedbackInput = {
-    author : Principal;
     voteType : Text;
   };
 };

@@ -3,17 +3,15 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Utils "../Utils/utils";
 import Types "../Model/types";
-import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Int "mo:base/Int";
 import Bool "mo:base/Bool";
 import Principal "mo:base/Principal";
 import Order "mo:base/Order";
-import StableMemory "mo:base/ExperimentalStableMemory";
+import Region "mo:base/Region";
 import Blob "mo:base/Blob";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
-
 
 module {
   public type Thread = Types.Thread;
@@ -22,7 +20,7 @@ module {
   public type CommentInput = Types.CommentInput;
   public type ThreadId = Types.ThreadId;
   public type CommentId = Types.CommentId;
-  public type CommentedThread = Types.CommentedThread;
+  public type HydratedThread = Types.HydratedThread;
   public type FeedbackInput = Types.FeedbackInput;
   public type BlobRef = Types.BlobRef;
 
@@ -30,10 +28,11 @@ module {
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     caller : Principal,
     input : ThreadInput,
+    fileRegion : Region,
     base : Nat64,
   ) : async ThreadId {
     let id = await Utils.newId();
-     let fileRefs : ?[BlobRef] = storeFiles(input.file, base);
+    let fileRefs : ?[BlobRef] = storeFiles(fileRegion, input.file, base);
 
     let doc : Thread = {
       id = id;
@@ -129,22 +128,22 @@ module {
     };
 
     let sorted = Array.sort<Comment>(
-    result,
-    func (a : Comment, b : Comment) : Order.Order {
-      let sa = a.likes - a.dislikes;
-      let sb = b.likes - b.dislikes;
+      result,
+      func(a : Comment, b : Comment) : Order.Order {
+        let sa = a.likes - a.dislikes;
+        let sb = b.likes - b.dislikes;
 
-      if (sa > sb) {
-        #less;
-      } else if (sa < sb) {
-        #greater;
-      } else {
-        #equal;
-      };
-    }
-  );
+        if (sa > sb) {
+          #less;
+        } else if (sa < sb) {
+          #greater;
+        } else {
+          #equal;
+        };
+      },
+    );
 
-  sorted;
+    sorted;
   };
 
   public func getThread(
@@ -180,11 +179,12 @@ module {
     return result;
   };
 
-  public func getCommentedThread(
+  public func getHydratedThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     commentsStore : HashMap.HashMap<CommentId, Comment>,
     id : ThreadId,
-  ) : async { #ok : CommentedThread; #err : Int } {
+    fileRegion : Region,
+  ) : async { #ok : HydratedThread; #err : Int } {
     let res = threadsStore.get(id);
 
     switch (res) {
@@ -192,49 +192,50 @@ module {
         #err(404);
       };
       case (?baseThread) {
-        let hydrated : CommentedThread = switch (baseThread.comments) {
+      let hydratedComments : ?[Comment] =
+        switch (baseThread.comments) {
           case (null) {
-            {
-              id = baseThread.id;
-              author = baseThread.author;
-              title = baseThread.title;
-              abstract = baseThread.abstract;
-              body = baseThread.body;
-              tags = baseThread.tags;
-              file = baseThread.file;
-              fileType = baseThread.fileType;
-              comments = null;
-              likes = baseThread.likes;
-              dislikes = baseThread.dislikes;
-              createdAt = baseThread.createdAt;
-            };
+            null;
           };
-
           case (?commentIds) {
             let comments = await getComments(commentsStore, commentIds);
-            {
-              id = baseThread.id;
-              author = baseThread.author;
-              title = baseThread.title;
-              abstract = baseThread.abstract;
-              body = baseThread.body;
-              tags = baseThread.tags;
-              file = baseThread.file;
-              fileType = baseThread.fileType;
-              comments = ?comments;
-              likes = baseThread.likes;
-              dislikes = baseThread.dislikes;
-              createdAt = baseThread.createdAt;
-            };
+            ?comments;
           };
         };
-        #ok(hydrated);
+
+      let hydratedFile : ?[Blob] =
+        switch (baseThread.file) {
+          case (null) {
+            null;
+          };
+          case (?refs) {
+            readFiles(fileRegion, ?refs);
+          };
+        };
+
+      let hydrated : HydratedThread = {
+        id = baseThread.id;
+        author = baseThread.author;
+        title = baseThread.title;
+        abstract = baseThread.abstract;
+        body = baseThread.body;
+        tags = baseThread.tags;
+        file = hydratedFile;
+        fileType = baseThread.fileType;
+        comments = hydratedComments;
+        likes = baseThread.likes;
+        dislikes = baseThread.dislikes;
+        createdAt = baseThread.createdAt;
       };
+
+      #ok(hydrated);
     };
   };
+};
 
   public func addFeedbackThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
+    caller : Principal,
     input : FeedbackInput,
     threadId : ThreadId,
   ) : async { #status : Int; #newScore : Int } {
@@ -280,6 +281,7 @@ module {
 
   public func addFeedbackComment(
     commentsStore : HashMap.HashMap<CommentId, Comment>,
+    caller : Principal,
     input : FeedbackInput,
     commentId : CommentId,
   ) : async { #status : Int } {
@@ -318,7 +320,11 @@ module {
     };
   };
 
-  public func ensureCapacity(files : ?[Blob], base: Nat64) : { #ok : Nat64; #err : Text;} {
+  public func ensureCapacity(
+    region : Region.Region,
+    files : ?[Blob],
+    base : Nat64,
+  ) : { #ok : Nat64; #err : Text } {
     switch (files) {
       case (null) {
         #ok(0);
@@ -334,7 +340,6 @@ module {
           if (total + len < total) {
             return #err("Total size overflow");
           };
-
           total += len;
         };
         let requiredEnd : Nat64 = base + total;
@@ -343,12 +348,12 @@ module {
         };
         let pageSize : Nat64 = 65536;
         let neededPages : Nat64 = (requiredEnd + pageSize - 1) / pageSize;
-        let currentPages : Nat64 = StableMemory.size();
+        let currentPages : Nat64 = Region.size(region);
         if (neededPages <= currentPages) {
           #ok(total);
         } else {
           let delta : Nat64 = neededPages - currentPages;
-          let old = StableMemory.grow(delta);
+          let old = Region.grow(region, delta);
           if (old == 0xFFFF_FFFF_FFFF_FFFF) {
             #err("Stable memory grow failed");
           } else {
@@ -359,7 +364,11 @@ module {
     };
   };
 
-  public func storeFiles(files : ?[Blob], base: Nat64) : ?[BlobRef] {
+  public func storeFiles(
+    region : Region.Region,
+    files : ?[Blob],
+    base : Nat64,
+  ) : ?[BlobRef] {
     switch (files) {
       case (null) {
         null;
@@ -369,17 +378,19 @@ module {
         if (n == 0) {
           return ?[];
         };
+        var offset : Nat64 = base;
         let refs = Array.tabulate<BlobRef>(
           n,
           func(i : Nat) : BlobRef {
             let b : Blob = fs[i];
             let len : Nat64 = Nat64.fromNat(b.size());
-            let start : Nat64 = base;
-            StableMemory.storeBlob(start, b);
-            {
-              offset = start;
+            Region.storeBlob(region, offset, b);
+            let r : BlobRef = {
+              offset = offset;
               length = len;
             };
+            offset += len;
+            r;
           },
         );
 
@@ -387,4 +398,32 @@ module {
       };
     };
   };
+
+  public func readFiles(
+  region : Region.Region,
+  refs   : ?[BlobRef],
+) : ?[Blob] {
+  switch (refs) {
+    case (null) {
+      null;
+    };
+    case (?rs) {
+      let n = rs.size();
+      if (n == 0) {
+        return ?[];
+      };
+
+      let blobs = Array.tabulate<Blob>(
+        n,
+        func (i : Nat) : Blob {
+          let r = rs[i];
+          let size : Nat = Nat64.toNat(r.length);
+          Region.loadBlob(region, r.offset, size);
+        },
+      );
+
+      ?blobs;
+    };
+  };
+}
 };
