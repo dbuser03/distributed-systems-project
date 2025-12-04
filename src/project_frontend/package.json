@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@dfinity/agent": "^3.0.0",
+    "@dfinity/auth-client": "^3.4.3",
     "@dfinity/candid": "^3.0.0",
     "@dfinity/principal": "^3.0.0",
     "@tailwindcss/vite": "^4.1.17",
@@ -23,6 +24,7 @@
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "@vitejs/plugin-react": "^4.0.1",

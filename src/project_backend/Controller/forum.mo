@@ -1,8 +1,6 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
-import Array "mo:base/Array";
 import Principal "mo:base/Principal";
-import Utils "../Utils/utils";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
@@ -21,7 +19,7 @@ persistent actor Forum {
 
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
   // start for the storage of blobs
-  stable var base : Nat64 = 0;
+  var base : Nat64 = 0;
   transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
   transient var tagIndex = HashMap.HashMap<Text, [ThreadId]>(
@@ -36,15 +34,15 @@ persistent actor Forum {
 
   public shared func createThread(caller : Principal, input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
     var lastStoredBatchSize : Nat64 = 0;
-    switch (ensureCapacity(files)) {
+    switch (DocumentStore.ensureCapacity(input.file, base)) {
       case (#ok totalLen) {
         lastStoredBatchSize := totalLen;
       };
-      case (#err msg) {
-        #err("Error while saving linked documents");
+      case (#err _) {
+        return #err("Error while saving linked documents");
       };
     };
-    let id = await DocumentStore.createThread(threadsStore, caller, input);
+    let id = await DocumentStore.createThread(threadsStore, caller, input, base);
     ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
     ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
     #id(id);
@@ -123,6 +121,9 @@ persistent actor Forum {
       startIdx,
       endIdx,
     );
-  }
+  };
 
+  public query (message) func whoami() : async Principal {
+    message.caller;
+  };
 };
