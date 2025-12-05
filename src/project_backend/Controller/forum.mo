@@ -1,10 +1,12 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
+import Iter "mo:base/Iter";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
 import Region "mo:base/Region";
+import ReferenceData "../Model/reference_data";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -35,12 +37,23 @@ persistent actor Forum {
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
   var isScoreIndexSorted : Bool = false;
 
+  transient var isicMap = HashMap.HashMap<Text, Text>(32, Text.equal, Text.hash);
+  transient var countryMap = HashMap.HashMap<Text, Text>(32, Text.equal, Text.hash);
 
+  do {
+    for ((k, v) in ReferenceData.ISICSections.vals()) {
+      isicMap.put(k, v);
+    };
 
+    for ((k, v) in ReferenceData.Countries.vals()) {
+      countryMap.put(k, v);
+    };
+  };
 
-
-
-  public shared (msg) func createThread(input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
+  public shared (msg) func createThread(input : ThreadInput) : async {
+    #id : ThreadId;
+    #err : Text;
+  } {
     let caller = msg.caller;
     var lastStoredBatchSize : Nat64 = 0;
     switch (DocumentStore.ensureCapacity(fileRegion, input.file, base)) {
@@ -138,9 +151,8 @@ persistent actor Forum {
     message.caller;
   };
 
-
-    public shared (msg) func deleteThread(
-    id : ThreadId,
+  public shared (msg) func deleteThread(
+    id : ThreadId
   ) : async (status : Int) {
     switch (threadsStore.get(id)) {
       case (null) {
@@ -168,7 +180,15 @@ persistent actor Forum {
     };
   };
 
-  public shared (msg) func deleteComment(commentId : CommentId)  : async ( status : Int ) {
+  public shared (msg) func deleteComment(commentId : CommentId) : async (status : Int) {
     await DocumentStore.deleteComment(threadsStore, commentsStore, msg.caller, commentId);
-  }; 
+  };
+
+  public query func getISICSections() : async [(Text, Text)] {
+    Iter.toArray(isicMap.entries());
+  };
+
+  public query func getCountries() : async [(Text, Text)] {
+    Iter.toArray(countryMap.entries());
+  };
 };
