@@ -7,6 +7,7 @@ import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
 import Region "mo:base/Region";
 import ReferenceData "../Model/reference_data";
+import Utils "../Utils/utils";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -55,6 +56,10 @@ persistent actor Forum {
     #err : Text;
   } {
     let caller = msg.caller;
+    let ok = Utils.validateTags(input.tags, isicMap, countryMap);
+    if (not ok) {
+      return #err("Invalid tags");
+    };
     var lastStoredBatchSize : Nat64 = 0;
     switch (DocumentStore.ensureCapacity(fileRegion, input.file, base)) {
       case (#ok totalLen) {
@@ -126,8 +131,16 @@ persistent actor Forum {
     await DocumentStore.addFeedbackComment(commentsStore, caller, input, commentId);
   };
 
-  public shared func getThreadsByTags(tags : [Text]) : async [Thread] {
-    await ReverseIndexes.getThreadsByTags(threadsStore, tagIndex, tags);
+  public shared func getThreadsByTags(tags : [Text]) : async {
+    #threads : [Thread];
+    #err : Text;
+  } {
+    let ok = Utils.validateTags(tags, isicMap, countryMap);
+    if (not ok) {
+      return #err("Invalid tags");
+    };
+    let res = await ReverseIndexes.getThreadsByTags(threadsStore, tagIndex, tags);
+    #threads(res);
   };
 
   public func getThreadsByScore(

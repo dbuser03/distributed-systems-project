@@ -1,6 +1,7 @@
 import Random "mo:base/Random";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
+import HashMap "mo:base/HashMap";
 
 module {
   public func newId() : async Text {
@@ -72,4 +73,33 @@ module {
 
     { likes = newLikes; dislikes = newDislikes; status = 200 };
   };
+
+  public func validateTags(
+    tags : [Text],
+    isicMap : HashMap.HashMap<Text, Text>,
+    countryMap : HashMap.HashMap<Text, Text>,
+  ) : Bool {
+
+    for (tag in tags.vals()) {
+
+      let inIsic = switch (isicMap.get(tag)) {
+        case (null) false;
+        case (_) true;
+      };
+
+      if (not inIsic) {
+        let inCountry = switch (countryMap.get(tag)) {
+          case (null) false;
+          case (_) true;
+        };
+
+        if (not inCountry) {
+          return false;
+        };
+      };
+    };
+
+    true;
+  }
+
 };
