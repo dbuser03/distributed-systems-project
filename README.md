@@ -79,3 +79,5 @@ Finally, just start the project with:
 dfx start --background
 dfx deploy
 ```
+
+Do not restart dfx using '--clean' flag.

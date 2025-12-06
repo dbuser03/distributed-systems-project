@@ -8,7 +8,22 @@ module {
   public type BlobRef = {
   offset : Nat64;
   length : Nat64;
-};
+  };
+
+  public type Role = {
+    #User;
+    #Verifier;
+    #Admin;
+  };
+
+  public type User = {
+    id : Principal;
+    alias : Text;
+    role : Role;
+    credibilityScore : Int;
+    isBanned : Bool;
+    createdAt : Time.Time;
+  };
 
   public type ThreadInput = {
     title : Text;
