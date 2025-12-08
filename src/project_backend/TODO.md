@@ -6,4 +6,5 @@
 - [X] add inverted index for likes
 - [X] handle saving files
 - [X] delete threads / comments
-- [] implement user data structure and logic
+- [X] implement user data structure and logic
+- [X] implement authentication and role based access control
