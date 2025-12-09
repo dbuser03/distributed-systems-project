@@ -31,8 +31,13 @@ export function StoryEditorForm({
   onPublish,
   onCancel,
 }: StoryEditorFormProps) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    onUpdateField("file", file);
+  };
+
   return (
-    <form className="space-y-6">
+    <form className="space-y-3">
       <TextInput
         id="title"
         label="Title"
@@ -51,13 +56,34 @@ export function StoryEditorForm({
         rows={3}
       />
 
-      <TagInput
-        tags={formData.industryTags}
-        inputValue={formData.industryTagInput}
-        onInputChange={(value) => onUpdateField("industryTagInput", value)}
-        onAddTag={onAddTag}
-        onRemoveTag={onRemoveTag}
-      />
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <TagInput
+            tags={formData.industryTags}
+            inputValue={formData.industryTagInput}
+            onInputChange={(value) => onUpdateField("industryTagInput", value)}
+            onAddTag={onAddTag}
+            onRemoveTag={onRemoveTag}
+          />
+        </div>
+        <div className="flex-1">
+          <fieldset className="fieldset">
+            <legend className="fieldset-legend">Pick a file</legend>
+            <div className="flex gap-2 items-start">
+              <input
+                type="file"
+                className="file-input flex-1"
+                onChange={handleFileChange}
+              />
+            </div>
+            {formData.file && (
+              <p className="text-sm text-gray-600 mt-1">
+                Selected: {formData.file.name}
+              </p>
+            )}
+          </fieldset>
+        </div>
+      </div>
 
       <TextArea
         id="content"

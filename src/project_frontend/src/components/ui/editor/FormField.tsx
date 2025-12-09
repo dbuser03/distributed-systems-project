@@ -35,17 +35,19 @@ export function TextInput({
   required,
 }: TextInputProps) {
   return (
-    <FormField id={id} label={label}>
+    <fieldset className="fieldset">
+      <legend className="fieldset-legend">{label}</legend>
       <input
         type="text"
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="input input-bordered w-full"
+        className="input w-full"
         placeholder={placeholder}
         required={required}
       />
-    </FormField>
+      {!required && <div className="label">Optional</div>}
+    </fieldset>
   );
 }
 
@@ -69,16 +71,19 @@ export function TextArea({
   required,
 }: TextAreaProps) {
   return (
-    <FormField id={id} label={label}>
+    <fieldset className="fieldset">
+      <legend className="fieldset-legend">{label}</legend>
       <textarea
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="textarea textarea-bordered w-full"
-        rows={rows}
+        className={`textarea w-full ${
+          rows > 10 ? "h-64" : rows > 5 ? "h-32" : "h-24"
+        }`}
         placeholder={placeholder}
         required={required}
       />
-    </FormField>
+      {!required && <div className="label">Optional</div>}
+    </fieldset>
   );
 }

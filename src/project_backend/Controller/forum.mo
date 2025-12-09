@@ -2,6 +2,8 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
+import Array "mo:base/Array";
+import Order "mo:base/Order";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
@@ -163,6 +165,17 @@ persistent actor Forum {
       startIdx,
       endIdx,
     );
+  };
+
+  // Get all threads (for gallery page)
+  public shared func getAllThreads() : async [Thread] {
+    let allThreads = Iter.toArray(threadsStore.vals());
+    // Sort by creation time, newest first
+    Array.sort<Thread>(allThreads, func(a: Thread, b: Thread) : Order.Order {
+      if (a.createdAt > b.createdAt) { #less }
+      else if (a.createdAt < b.createdAt) { #greater }
+      else { #equal }
+    });
   };
 
   public query (message) func whoami() : async Principal {
