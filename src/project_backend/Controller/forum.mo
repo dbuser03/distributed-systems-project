@@ -7,6 +7,7 @@ import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
 import Region "mo:base/Region";
 import ReferenceData "../Model/reference_data";
+import Demo "../Utils/load_demo";
 import Utils "../Utils/utils";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
@@ -358,4 +359,10 @@ persistent actor Forum {
 
     return #ok(user);
   };
+
+  // ----------- Demo Call ---------------
+  public shared func createDemo() : async () {
+    ignore await Demo.seedAllDemoData(users, threadsStore, commentsStore, scoreIndexHash, tagIndex);
+  };
+
 };
