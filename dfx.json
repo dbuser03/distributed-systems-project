@@ -1,36 +1,24 @@
 {
   "canisters": {
-    "forum": {
-      "type": "motoko",
-      "main": "src/project_backend/Controller/forum.mo"
+    "project_backend": {
+      "main": "src/project_backend/main.mo",
+      "type": "motoko"
     },
     "project_frontend": {
       "dependencies": [
-        "forum"
+        "project_backend"
       ],
       "source": [
         "src/project_frontend/dist"
       ],
       "type": "assets",
       "workspace": "project_frontend"
-    },
-    "internet_identity": {
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "type": "custom",
-      "init_arg": "(opt record { new_flow_origins = opt vec { \"http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:4943\" } })",
-      "specified_id": "rdmx6-jaaaa-aaaaa-aaadq-cai",
-      "remote": {
-        "id": {
-          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
-        }
-      },
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
     }
   },
   "defaults": {
     "build": {
       "args": "",
-      "packtool": "mops sources"
+      "packtool": ""
     }
   },
   "output_env_file": ".env",
