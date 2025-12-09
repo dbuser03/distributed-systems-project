@@ -1,10 +1,13 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
+import Iter "mo:base/Iter";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
 import Region "mo:base/Region";
+import ReferenceData "../Model/reference_data";
+import Utils "../Utils/utils";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
 
@@ -40,13 +43,28 @@ persistent actor Forum {
   transient var scoreIndexHash = HashMap.HashMap<ThreadId, Int>(10, Text.equal, Text.hash);
   var isScoreIndexSorted : Bool = false;
 
+  transient var isicMap = HashMap.HashMap<Text, Text>(32, Text.equal, Text.hash);
+  transient var countryMap = HashMap.HashMap<Text, Text>(32, Text.equal, Text.hash);
 
+  do {
+    for ((k, v) in ReferenceData.ISICSections.vals()) {
+      isicMap.put(k, v);
+    };
 
+    for ((k, v) in ReferenceData.Countries.vals()) {
+      countryMap.put(k, v);
+    };
+  };
 
-
-
-  public shared (msg) func createThread(input : ThreadInput) : async { #id : ThreadId; #err : Text;} {
+  public shared (msg) func createThread(input : ThreadInput) : async {
+    #id : ThreadId;
+    #err : Text;
+  } {
     let caller = msg.caller;
+    let ok = Utils.validateTags(input.tags, isicMap, countryMap);
+    if (not ok) {
+      return #err("Invalid tags");
+    };
     var lastStoredBatchSize : Nat64 = 0;
     switch (DocumentStore.ensureCapacity(fileRegion, input.file, base)) {
       case (#ok totalLen) {
@@ -118,8 +136,16 @@ persistent actor Forum {
     await DocumentStore.addFeedbackComment(commentsStore, caller, input, commentId);
   };
 
-  public shared func getThreadsByTags(tags : [Text]) : async [Thread] {
-    await ReverseIndexes.getThreadsByTags(threadsStore, tagIndex, tags);
+  public shared func getThreadsByTags(tags : [Text]) : async {
+    #threads : [Thread];
+    #err : Text;
+  } {
+    let ok = Utils.validateTags(tags, isicMap, countryMap);
+    if (not ok) {
+      return #err("Invalid tags");
+    };
+    let res = await ReverseIndexes.getThreadsByTags(threadsStore, tagIndex, tags);
+    #threads(res);
   };
 
   public func getThreadsByScore(
@@ -143,9 +169,8 @@ persistent actor Forum {
     message.caller;
   };
 
-
-    public shared (msg) func deleteThread(
-    id : ThreadId,
+  public shared (msg) func deleteThread(
+    id : ThreadId
   ) : async (status : Int) {
     switch (threadsStore.get(id)) {
       case (null) {
@@ -173,8 +198,16 @@ persistent actor Forum {
     };
   };
 
-  public shared (msg) func deleteComment(commentId : CommentId)  : async ( status : Int ) {
+  public shared (msg) func deleteComment(commentId : CommentId) : async (status : Int) {
     await DocumentStore.deleteComment(threadsStore, commentsStore, msg.caller, commentId);
+  };
+
+  public query func getISICSections() : async [(Text, Text)] {
+    Iter.toArray(isicMap.entries());
+  };
+
+  public query func getCountries() : async [(Text, Text)] {
+    Iter.toArray(countryMap.entries());
   }; 
 
   //-------------------------------- User specific functions --------------------------------
