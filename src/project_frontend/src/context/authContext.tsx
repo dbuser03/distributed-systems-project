@@ -1,53 +1,98 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AuthClient } from "@dfinity/auth-client";
 import { ActorSubclass, Identity } from "@dfinity/agent";
+import { Principal } from "@dfinity/principal"; // Serve per i tipi
 import { createActor } from "../../../declarations/forum";
 import { canisterId } from "../../../declarations/forum/index.js";
 import type { _SERVICE } from "../../../declarations/forum/forum.did";
 
-// Tipo per l'attore del forum
+export type UserRole = 'Guest' | 'User' | 'Verifier' | 'Admin';
+
+export interface UserProfile {
+  principal: Principal;
+  alias: string;
+  role: UserRole;
+  credibilityScore: number;
+}
+
 type ForumActor = ActorSubclass<_SERVICE>;
 
-// Interfaccia per il contesto di autenticazione
 interface AuthContextType {
   isAuthenticated: boolean;
+  userProfile: UserProfile | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  updateAlias: (newAlias: string) => Promise<void>;
   actor: ForumActor | null;
   authClient: AuthClient | null;
 }
 
-// Interfaccia per le props del provider
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Creiamo il contesto con il tipo corretto
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Definiamo l'URL corretto (la logica che abbiamo discusso prima)
 const network = process.env.DFX_NETWORK || "local";
 const identityProvider = network === "local" 
   ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/#authorize`
   : "https://identity.ic0.app/#authorize";
 
+const parseRole = (roleVariant: any): UserRole => {
+  if (!roleVariant) return 'Guest';
+  if ('Admin' in roleVariant) return 'Admin';
+  if ('Verifier' in roleVariant) return 'Verifier';
+  return 'User';
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
   const [actor, setActor] = useState<ForumActor | null>(null);
+  
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
-  // Inizializzazione al caricamento della pagina
+  const syncUserWithBackend = async (currentActor: ForumActor) => {
+    try {
+      console.log("Sync with backend...");
+      
+      const result = await currentActor.login();
+
+      if ('ok' in result) {
+        const user = result.ok;
+        const roleStr = parseRole(user.role);
+
+        setUserProfile({
+          principal: user.id,
+          alias: user.alias,
+          role: roleStr,
+          credibilityScore: Number(user.credibilityScore)
+        });
+        
+        console.log(`Login successful. Alias: ${user.alias}, Role: ${roleStr}`);
+      } else {
+        const errorMsg = result.err;
+        console.error("Smth wrong:", errorMsg);
+        alert(`ACCESSO NEGATO: ${errorMsg}`);
+        await performLogout();
+      }
+    } catch (error) {
+      console.error("Critical error during backend login:", error);
+    }
+  };
+
   useEffect(() => {
     AuthClient.create().then(async (client: AuthClient) => {
       setAuthClient(client);
       const isAuth = await client.isAuthenticated();
       setIsAuthenticated(isAuth);
       
-      // Se è loggato, creiamo subito l'attore
       if (isAuth) {
         const identity: Identity = client.getIdentity();
         const newActor = createActor(canisterId, { agentOptions: { identity } }) as ForumActor;
         setActor(newActor);
+        
+        await syncUserWithBackend(newActor);
       }
     });
   }, []);
@@ -56,32 +101,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (authClient) {
       await authClient.login({
         identityProvider,
-        onSuccess: () => {
+        onSuccess: async () => {
           setIsAuthenticated(true);
           const identity: Identity = authClient.getIdentity();
           const newActor = createActor(canisterId, { agentOptions: { identity } }) as ForumActor;
           setActor(newActor);
+          
+          await syncUserWithBackend(newActor);
         },
       });
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const performLogout = async () => {
     if (authClient) {
       await authClient.logout();
-      setIsAuthenticated(false);
-      setActor(null);
+    }
+    setIsAuthenticated(false);
+    setActor(null);
+    setUserProfile(null);
+  };
+
+  const logout = async (): Promise<void> => {
+    await performLogout();
+  };
+
+  const updateAlias = async (newAlias: string): Promise<void> => {
+    if (!actor) return;
+    try {
+      const res = await actor.updateAlias(newAlias);
+      if ('ok' in res) {
+        setUserProfile(prev => prev ? { ...prev, alias: newAlias } : null);
+      } else {
+        alert("Error updating profile: " + res.err);
+      }
+    } catch (e) {
+      console.error("Error updating alias:", e);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, actor, authClient }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      userProfile,
+      login, 
+      logout, 
+      updateAlias,
+      actor, 
+      authClient 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook personalizzato per usare l'auth ovunque
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

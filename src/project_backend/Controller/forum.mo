@@ -8,6 +8,8 @@ import ReverseIndexes "../Services/reverse_indexes";
 import Region "mo:base/Region";
 import ReferenceData "../Model/reference_data";
 import Utils "../Utils/utils";
+import Time "mo:base/Time";
+import Result "mo:base/Result";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -25,6 +27,9 @@ persistent actor Forum {
   // start for the storage of blobs
   var fileRegion : Region.Region = Region.new();
   var base : Nat64 = 0;
+
+  var userStore : [(Principal, Types.User)] = []; 
+  transient var users = HashMap.HashMap<Principal, Types.User>(10, Principal.equal, Principal.hash);
 
   transient var commentsStore = HashMap.HashMap<CommentId, Comment>(10, Text.equal, Text.hash);
 
@@ -203,5 +208,122 @@ persistent actor Forum {
 
   public query func getCountries() : async [(Text, Text)] {
     Iter.toArray(countryMap.entries());
+  }; 
+
+  //-------------------------------- User specific functions --------------------------------
+
+
+  //update user alias
+  public shared (msg) func updateAlias(newAlias : Text) : async { #ok : Types.User; #err : Text } {
+    let caller = msg.caller;
+
+    switch(users.get(caller)) {
+        case (null) {
+            return #err("Utente non trovato. Effettua il login prima.");
+        };
+        case (?existingUser) {
+            
+            if (existingUser.isBanned) {
+                return #err("Sei bannato. Non puoi modificare il profilo.");
+            };
+
+            let updatedUser : Types.User = {
+                id = existingUser.id;
+                alias = newAlias;
+                role = existingUser.role; 
+                credibilityScore = existingUser.credibilityScore; 
+                isBanned = existingUser.isBanned;
+                createdAt = existingUser.createdAt;
+            };
+
+            users.put(caller, updatedUser);
+            return #ok(updatedUser);
+        };
+    };
+  };
+
+
+  //get profile of the caller
+  public shared (msg) func getMyProfile() : async {#ok: Types.User; #err: Text} {
+    let caller = msg.caller;
+    switch(users.get(caller)) {
+      case (?user) #ok(user);
+      case (null) {
+        return #err("USER NOT REGISTERED");
+      };
+    };
+  };
+
+  // get user role
+  public shared (msg) func getMyRole() : async Types.Role {
+    let caller = msg.caller;
+    switch(users.get(caller)) {
+        case (?user) user.role;
+        case (null) #User;
+    }
+  };
+
+  // thats me (alessio) for testing, u might want to change it to yout current internet identity ID that u are using.
+  // I know that it is horrible hardcoded like this, but ya know. Feel free to change it.
+  let OWNER_ID = Principal.fromText("s26nm-yteng-muide-2zjtd-hq4s7-ah76k-5ilng-7ergv-t74p3-d7rxq-yqe"); 
+
+  // promote user to admin or verifier
+  public shared (msg) func promoteUser(targetUser: Principal, newRole: Types.Role) : async { #ok; #err: Text } {
+      if (msg.caller != OWNER_ID) {
+          return #err("must be admin.");
+      };
+
+      switch(users.get(targetUser)) {
+          case (?u) {
+              let updatedUser = {
+                  id = u.id;
+                  alias = u.alias;
+                  role = newRole;
+                  createdAt = u.createdAt;
+                  credibilityScore = u.credibilityScore;
+                  isBanned = u.isBanned;
+              };
+              users.put(targetUser, updatedUser);
+              return #ok;
+          };
+          case (null) {
+              return #err("User not found. They must register first.");
+          };
+      };
+  };
+
+  // login or register (called by authContext in frontend)
+  public shared (msg) func login() : async { #ok : Types.User; #err : Text } {
+      return getUserAndCheckBan(msg.caller);
+  };
+
+  // internal function to get user or register if not existing, and check if banned
+  func getUserAndCheckBan(p: Principal) : Result.Result<Types.User, Text> {
+      
+      var user : Types.User = { id = p; alias = ""; role = #User; credibilityScore = 0; isBanned = false; createdAt = 0 };
+
+      switch(users.get(p)) {
+          case (?u) { 
+              user := u; 
+          };
+          case (null) {
+              let isOwner = (p == OWNER_ID);
+              let newUser : Types.User = {
+                  id = p;
+                  alias = Principal.toText(p);
+                  role = if (isOwner) #Admin else #User;
+                  credibilityScore = 10;
+                  isBanned = false;
+                  createdAt = Time.now();
+              };
+              users.put(p, newUser);
+              user := newUser;
+          };
+      };
+      if (user.isBanned) {
+          return #err("U GOT BANNED, SKILL ISSUE.");
+      };
+
+      return #ok(user);
   };
 };

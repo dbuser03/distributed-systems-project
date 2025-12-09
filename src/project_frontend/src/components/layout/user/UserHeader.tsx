@@ -3,6 +3,7 @@ interface UserHeaderProps {
   credibilityScore: number;
   threadCount: number;
   contributionCount: number;
+  role: string;
 }
 
 export function UserHeader({
@@ -10,6 +11,7 @@ export function UserHeader({
   credibilityScore,
   threadCount,
   contributionCount,
+  role,
 }: UserHeaderProps) {
   return (
     <div className="border-b border-base-300 pb-4 mb-6">
@@ -18,6 +20,7 @@ export function UserHeader({
         credibilityScore={credibilityScore}
         threadCount={threadCount}
         contributionCount={contributionCount}
+        role={role}
       />
     </div>
   );
@@ -27,12 +30,14 @@ interface UserStatsProps {
   credibilityScore: number;
   threadCount: number;
   contributionCount: number;
+  role: string;
 }
 
 function UserStats({
   credibilityScore,
   threadCount,
   contributionCount,
+  role,
 }: UserStatsProps) {
   return (
     <div className="text-sm text-base-content/70">
@@ -41,13 +46,15 @@ function UserStats({
       <StatItem label="Threads" value={threadCount} />
       {" • "}
       <StatItem label="Contributions" value={contributionCount} />
+      {" • "}
+      <StatItem label="Role" value={role ? role : "Guest"} />
     </div>
   );
 }
 
 interface StatItemProps {
   label: string;
-  value: number;
+  value: number | string;
 }
 
 function StatItem({ label, value }: StatItemProps) {
