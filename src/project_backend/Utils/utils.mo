@@ -2,6 +2,7 @@ import Random "mo:base/Random";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
 import HashMap "mo:base/HashMap";
+import Types "../Model/types";
 
 module {
   public func newId() : async Text {
@@ -100,6 +101,16 @@ module {
     };
 
     true;
-  }
+  };
+
+  public func isValidUser(
+  id : Principal,
+  users : HashMap.HashMap<Principal, Types.User>
+) : Bool {
+  switch (users.get(id)) {
+    case (?u) { not u.isBanned };
+    case (null) { false };
+  };
+};
 
 };
