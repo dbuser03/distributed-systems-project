@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ISICSectionKey, Story } from "../types";
 import { mockStories } from "../data";
+import { ActorSubclass } from "@dfinity/agent";
+import type { _SERVICE } from "../../../declarations/forum/forum.did";
+
+type ForumActor = ActorSubclass<_SERVICE>;
 
 export interface StoryFormData {
   title: string;
@@ -9,6 +13,7 @@ export interface StoryFormData {
   content: string;
   industryTags: ISICSectionKey[];
   industryTagInput: string;
+  file?: File | null;
 }
 
 const initialFormData: StoryFormData = {
@@ -17,9 +22,10 @@ const initialFormData: StoryFormData = {
   content: "",
   industryTags: [],
   industryTagInput: "",
+  file: null,
 };
 
-export function useStoryEditor(storyId?: string) {
+export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<StoryFormData>(initialFormData);
 
@@ -93,13 +99,45 @@ export function useStoryEditor(storyId?: string) {
   );
 
   const handlePublish = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!canPublish) return;
-      // TODO: Implement publish logic
-      console.log("Publishing story:", formData);
+      if (!canPublish || !actor) return;
+
+      try {
+        // Converti il file in array di Blob se presente
+        let fileBlobs: Uint8Array[] | undefined = undefined;
+        let fileTypes: string[] | undefined = undefined;
+
+        if (formData.file) {
+          const arrayBuffer = await formData.file.arrayBuffer();
+          fileBlobs = [new Uint8Array(arrayBuffer)];
+          fileTypes = [formData.file.type];
+        }
+
+        const input = {
+          title: formData.title,
+          abstract: formData.preview,
+          body: formData.content,
+          tags: formData.industryTags,
+          file: fileBlobs ? [fileBlobs] : [],
+          fileType: fileTypes ? [fileTypes] : [],
+        };
+
+        const result = await actor.createThread(input);
+
+        if ("id" in result) {
+          console.log("Story published successfully with ID:", result.id);
+          navigate(`/story/${result.id}`);
+        } else if ("err" in result) {
+          console.error("Error publishing story:", result.err);
+          alert(`Error: ${result.err}`);
+        }
+      } catch (error) {
+        console.error("Error publishing story:", error);
+        alert("Failed to publish story. Please try again.");
+      }
     },
-    [formData, canPublish]
+    [formData, canPublish, actor, navigate]
   );
 
   const handleCancel = useCallback(() => {

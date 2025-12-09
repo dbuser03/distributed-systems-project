@@ -1,7 +1,8 @@
 import React, { useCallback } from "react";
 import { ISICSectionKey } from "../../../types";
-import { ISICSections } from "../../../data";
-import { FormField } from "./FormField";
+import { ISICSections } from "../../../data/index";
+import FilterDropdown from "../filters/FilterDropdown";
+import { FilterIcon } from "../../icons/FilterIcons";
 
 interface TagInputProps {
   tags: ISICSectionKey[];
@@ -18,29 +19,51 @@ export function TagInput({
   onAddTag,
   onRemoveTag,
 }: TagInputProps) {
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter" && inputValue.trim()) {
-        e.preventDefault();
-        onAddTag(inputValue);
-      }
-    },
-    [inputValue, onAddTag]
-  );
+  const availableTags = Object.keys(ISICSections) as ISICSectionKey[];
+
+  const handleTagSelect = (tag: ISICSectionKey) => {
+    if (!tags.includes(tag)) {
+      onAddTag(tag);
+    }
+  };
 
   return (
-    <FormField id="tags" label="Tags">
-      <input
-        type="text"
-        id="tags"
-        value={inputValue}
-        onChange={(e) => onInputChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="input input-bordered w-full"
-        placeholder="Type a tag and press Enter"
-      />
+    <fieldset className="fieldset">
+      <legend className="fieldset-legend">Tags</legend>
+      <div className="flex gap-2 items-start">
+        <FilterDropdown
+          label="Select Tags"
+          icon={<FilterIcon />}
+          badgeCount={tags.length}
+          className="w-80"
+        >
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {availableTags.map((tag) => (
+              <label
+                key={tag}
+                className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-2 rounded"
+              >
+                <input
+                  type="checkbox"
+                  checked={tags.includes(tag)}
+                  onChange={() => {
+                    if (tags.includes(tag)) {
+                      onRemoveTag(tag);
+                    } else {
+                      handleTagSelect(tag);
+                    }
+                  }}
+                  className="checkbox checkbox-sm"
+                />
+                <span className="text-sm">{ISICSections[tag]}</span>
+              </label>
+            ))}
+          </div>
+        </FilterDropdown>
+      </div>
       {tags.length > 0 && <TagList tags={tags} onRemove={onRemoveTag} />}
-    </FormField>
+      <div className="label">Optional</div>
+    </fieldset>
   );
 }
 

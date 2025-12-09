@@ -23,6 +23,10 @@ module {
     credibilityScore : Int;
     isBanned : Bool;
     createdAt : Time.Time;
+    threads: [ThreadId]; // New field to store the user’s created threads
+    comments: [CommentId]; // New field to store the user’s created comments
+    likedThreads: [ThreadId]; // New field to store the threads the user liked
+    dislikedThreads: [ThreadId]; // New field to store the threads the user disliked
   };
 
   public type ThreadInput = {

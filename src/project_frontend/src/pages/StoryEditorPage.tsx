@@ -9,6 +9,9 @@ import { LoadingProfile } from "../components/ui/LoadingProfile";
 
 function StoryEditorPage() {
   const { id } = useParams<{ id?: string }>();
+
+  const { authClient, isAuthenticated, login, actor } = useAuth() as any;
+
   const {
     formData,
     isEditing,
@@ -20,37 +23,30 @@ function StoryEditorPage() {
     handleSaveDraft,
     handlePublish,
     handleCancel,
-  } = useStoryEditor(id);
+  } = useStoryEditor(id, actor);
 
-    const { authClient, isAuthenticated, login } = useAuth() as any; 
-  
-    const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
-  
-    useEffect(() => {
-  
-      if (isAuthenticated && authClient) {
-        const principal = authClient.getIdentity().getPrincipal().toText();
-        setCurrentUserId(principal);
-      }
-    }, [isAuthenticated, authClient]);
-  
-  
-    const profile = useUserProfile(currentUserId);
-    
-  
-    if (!isAuthenticated) {
-      return (
-        <LoginRequired login={login} />
-      );
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    if (isAuthenticated && authClient) {
+      const principal = authClient.getIdentity().getPrincipal().toText();
+      setCurrentUserId(principal);
     }
-  
-    if (!profile) {
-      return (
-        <LoadingProfile />
-      );
-    }
-  
-    const { userId, threadsCreated, contributions, credibilityScore } = profile;
+  }, [isAuthenticated, authClient]);
+
+  const profile = useUserProfile(currentUserId);
+
+  if (!isAuthenticated) {
+    return <LoginRequired login={login} />;
+  }
+
+  if (!profile) {
+    return <LoadingProfile />;
+  }
+
+  const { userId, threadsCreated, contributions, credibilityScore } = profile;
 
   return (
     <div className="min-h-full p-8 flex flex-col items-center">

@@ -2,6 +2,8 @@ import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
+import Array "mo:base/Array";
+import Order "mo:base/Order";
 import Types "../Model/types";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
@@ -165,6 +167,17 @@ persistent actor Forum {
     );
   };
 
+  // Get all threads (for gallery page)
+  public shared func getAllThreads() : async [Thread] {
+    let allThreads = Iter.toArray(threadsStore.vals());
+    // Sort by creation time, newest first
+    Array.sort<Thread>(allThreads, func(a: Thread, b: Thread) : Order.Order {
+      if (a.createdAt > b.createdAt) { #less }
+      else if (a.createdAt < b.createdAt) { #greater }
+      else { #equal }
+    });
+  };
+
   public query (message) func whoami() : async Principal {
     message.caller;
   };
@@ -213,6 +226,51 @@ persistent actor Forum {
   //-------------------------------- User specific functions --------------------------------
 
 
+  // Method to get all threads created by a user
+  public shared (msg) func getUserThreads(userId : Principal) : async [Thread] {
+    // Fetch the user to ensure they exist and are not banned
+    let userResult = await getUserAndCheckBan(userId);
+    switch (userResult) {
+        case (#err msg) {
+            return []  // If user doesn't exist or is banned, return empty list
+        };
+        case (#ok user) {
+            // Get the list of thread IDs from the user's data
+            let threadIds = user.threads;
+            if (threadIds == []) {
+                return []  // If no threads, return empty list
+            };
+
+            // Fetch the threads using the existing `getThreads` function
+            let threads = await getThreads(threadIds);
+            return threads;  // Return the list of threads created by the user
+        };
+    };
+  };
+
+  // Method to check if a user liked or disliked a specific post (ThreadId)
+  public shared (msg) func hasUserLikedOrDisliked(userId : Principal, postId : ThreadId) : async Text {
+    // Fetch the user to ensure they exist and are not banned
+    let userResult = await getUserAndCheckBan(userId);
+    switch (userResult) {
+        case (#err msg) {
+            return "no interaction"  // If user doesn't exist or is banned, return no interaction
+        };
+        case (#ok user) {
+            // Check if the user liked or disliked the given thread
+            if (Array.contains(user.likedThreads, postId)) {
+                return "liked";  // Return "liked" if the postId is in likedThreads
+            } else if (Array.contains(user.dislikedThreads, postId)) {
+                return "disliked";  // Return "disliked" if the postId is in dislikedThreads
+            } else {
+                return "no interaction";  // Return "no interaction" if no action was taken
+            }
+        };
+    };
+  };
+  
+
+  
   //update user alias
   public shared (msg) func updateAlias(newAlias : Text) : async { #ok : Types.User; #err : Text } {
     let caller = msg.caller;

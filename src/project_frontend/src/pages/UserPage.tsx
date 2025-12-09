@@ -23,11 +23,11 @@ function UserPage() {
     setStatus("Processing...");
     try {
       const principal = Principal.fromText(targetId);
-      const roleVariant = { [selectedRole]: null }; 
-      
+      const roleVariant = { [selectedRole]: null };
+
       const result = await actor.promoteUser(principal, roleVariant);
 
-      if ('ok' in result) {
+      if ("ok" in result) {
         setStatus(`Success: ${targetId} is now ${selectedRole}`);
         setTargetId("");
       } else {
@@ -53,19 +53,19 @@ function UserPage() {
     <div className="min-h-full p-8 flex flex-col items-center">
       <div className="w-full max-w-5xl">
         <UserHeader
-          userId={userProfile.alias} 
+          userId={userProfile.alias}
           credibilityScore={userProfile.credibilityScore}
           threadCount={threadsCreated.length}
           contributionCount={contributions.length}
           role={userProfile.role}
         />
 
-        {userProfile.role === 'Admin' && (
+        {userProfile.role === "Admin" && (
           <div className="bg-gray-100 p-6 rounded-lg mb-6 border border-gray-300">
             <h3 className="font-bold text-lg mb-4">Admin: Manage Roles</h3>
             <div className="flex flex-col md:flex-row gap-4">
               <input
-                className="p-2 border rounded flex-grow"
+                className="p-2 border rounded grow"
                 placeholder="Principal ID (e.g. 2vxsx...)"
                 value={targetId}
                 onChange={(e) => setTargetId(e.target.value)}

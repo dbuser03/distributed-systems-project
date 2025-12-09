@@ -1,12 +1,18 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { ActorSubclass, Identity } from "@dfinity/agent";
-import { Principal } from "@dfinity/principal"; // Serve per i tipi
+import { Principal } from "@dfinity/principal";
 import { createActor } from "../../../declarations/forum";
 import { canisterId } from "../../../declarations/forum/index.js";
 import type { _SERVICE } from "../../../declarations/forum/forum.did";
 
-export type UserRole = 'Guest' | 'User' | 'Verifier' | 'Admin';
+export type UserRole = "Guest" | "User" | "Verifier" | "Admin";
 
 export interface UserProfile {
   principal: Principal;
@@ -34,31 +40,32 @@ interface AuthProviderProps {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const network = process.env.DFX_NETWORK || "local";
-const identityProvider = network === "local" 
-  ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/#authorize`
-  : "https://identity.ic0.app/#authorize";
+const identityProvider =
+  network === "local"
+    ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/#authorize`
+    : "https://identity.ic0.app/#authorize";
 
 const parseRole = (roleVariant: any): UserRole => {
-  if (!roleVariant) return 'Guest';
-  if ('Admin' in roleVariant) return 'Admin';
-  if ('Verifier' in roleVariant) return 'Verifier';
-  return 'User';
+  if (!roleVariant) return "Guest";
+  if ("Admin" in roleVariant) return "Admin";
+  if ("Verifier" in roleVariant) return "Verifier";
+  return "User";
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
   const [actor, setActor] = useState<ForumActor | null>(null);
-  
+
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const syncUserWithBackend = async (currentActor: ForumActor) => {
     try {
       console.log("Sync with backend...");
-      
+
       const result = await currentActor.login();
 
-      if ('ok' in result) {
+      if ("ok" in result) {
         const user = result.ok;
         const roleStr = parseRole(user.role);
 
@@ -66,9 +73,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           principal: user.id,
           alias: user.alias,
           role: roleStr,
-          credibilityScore: Number(user.credibilityScore)
+          credibilityScore: Number(user.credibilityScore),
         });
-        
+
         console.log(`Login successful. Alias: ${user.alias}, Role: ${roleStr}`);
       } else {
         const errorMsg = result.err;
@@ -86,12 +93,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setAuthClient(client);
       const isAuth = await client.isAuthenticated();
       setIsAuthenticated(isAuth);
-      
+
       if (isAuth) {
         const identity: Identity = client.getIdentity();
-        const newActor = createActor(canisterId, { agentOptions: { identity } }) as ForumActor;
+        const newActor = createActor(canisterId, {
+          agentOptions: { identity },
+        }) as ForumActor;
         setActor(newActor);
-        
+
         await syncUserWithBackend(newActor);
       }
     });
@@ -104,9 +113,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         onSuccess: async () => {
           setIsAuthenticated(true);
           const identity: Identity = authClient.getIdentity();
-          const newActor = createActor(canisterId, { agentOptions: { identity } }) as ForumActor;
+          const newActor = createActor(canisterId, {
+            agentOptions: { identity },
+          }) as ForumActor;
           setActor(newActor);
-          
+
           await syncUserWithBackend(newActor);
         },
       });
@@ -130,8 +141,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!actor) return;
     try {
       const res = await actor.updateAlias(newAlias);
-      if ('ok' in res) {
-        setUserProfile(prev => prev ? { ...prev, alias: newAlias } : null);
+      if ("ok" in res) {
+        setUserProfile((prev) => (prev ? { ...prev, alias: newAlias } : null));
       } else {
         alert("Error updating profile: " + res.err);
       }
@@ -141,15 +152,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      userProfile,
-      login, 
-      logout, 
-      updateAlias,
-      actor, 
-      authClient 
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        userProfile,
+        login,
+        logout,
+        updateAlias,
+        actor,
+        authClient,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
