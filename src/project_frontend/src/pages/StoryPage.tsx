@@ -8,32 +8,19 @@ import {
 } from "../components/ui";
 import { StoryAttachments } from "../components/ui/StoryAttachment";
 import { useStory } from "../hooks";
-import CommentThread, { Comment } from "../components/ui/CommentThread";
+import CommentThread from "../components/ui/CommentThread";
 
 function StoryPage() {
   const { id } = useParams<{ id: string }>();
-  const { story, error } = useStory(id);
+  const { story, comments, error, isLoading } = useStory(id);
 
-  const comments: Comment[] = [
-    {
-      id: "1",
-      threadId: "1",
-      author: "John Doe",
-      body: "This is a comment",
-      likes: 0,
-      dislikes: 0,
-      createdAt: BigInt(1718000000000),
-    },
-    {
-      id: "2",
-      threadId: "1",
-      author: "Jane Doe",
-      body: "This is another comment",
-      likes: 0,
-      dislikes: 0,
-      createdAt: BigInt(1718000000000),
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="min-h-full p-8 flex justify-center items-center">
+        <p className="animate-pulse">Loading story...</p>
+      </div>
+    );
+  }
 
   if (error || !story) {
     return <NotFoundError message="Story not found" />;
