@@ -38,10 +38,9 @@ module {
                     case (_) usr.allDislikes;
                 };
                 var alpha = 10;
-                var beta = 20;
                 let num : Float = Float.fromInt(newAllLikes + alpha);
 
-                let denom : Float = Float.fromInt(newAllLikes + newAllDislikes + alpha + beta);
+                let denom : Float = Float.fromInt(newAllLikes + newAllDislikes + 2 * alpha);
                 let ratio : Float = num / denom;
                 let scaled : Float = ratio * 100.0;
                 let newCredibility : Int = Float.toInt(Float.nearest(scaled));
