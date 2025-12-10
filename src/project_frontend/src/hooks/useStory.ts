@@ -16,8 +16,6 @@ interface UseStoryResult {
   error: string | null;
 }
 
-// Definiamo un tipo locale per ciò che ritorna getHydratedThread
-// Estende il thread normale includendo i commenti completi
 interface HydratedThreadResponse extends BackendThread {
   comments: BackendComment[]; 
 }
@@ -46,22 +44,25 @@ export function useStory(id: string | undefined): UseStoryResult {
       try {
         console.log(`Fetching hydrated thread for ID: ${id}`);
         
-        // 1. Chiamata UNICA al backend
         const result = await actor.getHydratedThread(id);
 
         if ("ok" in result) {
-          // Casting del risultato: sappiamo che contiene sia thread che commenti
           const hydratedData = result.ok as unknown as HydratedThreadResponse;
 
-          // 2. Adattiamo la Storia
           const adaptedStory = adaptThreadToStory(hydratedData);
           setStory(adaptedStory);
 
-          // 3. Adattiamo i Commenti (SONO GIÀ QUI!)
-          // Non serve fare un'altra chiamata await actor.getComments(...)
-          if (hydratedData.comments && Array.isArray(hydratedData.comments)) {
-             const adaptedComments = hydratedData.comments.map(adaptComment);
-             setComments(adaptedComments);
+
+          if (Array.isArray(hydratedData.comments) && hydratedData.comments.length > 0) {
+             
+             const realCommentsArray = hydratedData.comments[0];
+
+             if (Array.isArray(realCommentsArray)) {
+                 const adaptedComments = realCommentsArray.map(adaptComment);
+                 setComments(adaptedComments);
+             }
+          } else {
+             setComments([]);
           }
 
         } else {
@@ -79,6 +80,8 @@ export function useStory(id: string | undefined): UseStoryResult {
 
     fetchData();
   }, [id, actor]);
+
+  console.log("useStory state:", { story, comments, isLoading, error });
 
   return {
     story,

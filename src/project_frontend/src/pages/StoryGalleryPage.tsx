@@ -27,17 +27,14 @@ function StoryGalleryPage() {
         setIsLoading(true);
         console.log("Fetching threads from Forum canister...");
 
-        // 2. Chiamata all'actor pubblico 'forum'
-        // Nota: i numeri 0n e 50n sono BigInt richiesti da Motoko
+
         const rawThreads = await actor.getThreadsByScore(0n, 50n);
         
-        // 3. Conversione usando l'adapter che abbiamo creato
-        // Usiamo 'unknown' per evitare conflitti tra i tipi generati e la nostra interfaccia
         const adaptedStories = (rawThreads as unknown as BackendThread[]).map(adaptThreadToStory);
 
         setStories(adaptedStories);
       } catch (error) {
-        console.error("Errore nel caricamento dei thread:", error);
+        console.error("Error in loading threads:", error);
       } finally {
         setIsLoading(false);
       }

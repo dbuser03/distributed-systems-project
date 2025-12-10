@@ -31,26 +31,45 @@ export interface BackendComment {
 }
 
 function safePrincipalToText(p: any): string {
-  if (!p) return "Anonymous"; // Se è null o undefined
+  if (!p) return "Anonymous";
 
-  // Caso: è un array opzionale di Motoko [] o [Principal]
   if (Array.isArray(p)) {
     if (p.length === 0) return "Anonymous";
-    return safePrincipalToText(p[0]); // Ricorsione sul primo elemento
+    return safePrincipalToText(p[0]);
   }
 
-  // Caso: è un oggetto Principal corretto
   if (typeof p.toText === "function") {
     return p.toText();
   }
 
-  // Caso: è un oggetto serializzato JSON (quello che vedevi nel log)
   if (p.__principal__) {
     return p.__principal__;
   }
 
-  // Fallback estremo
   return String(p);
+}
+
+function convertDate(val: bigint): bigint {
+  if (val === undefined || val === null) {
+    // Ritorna 0 o la data attuale in formato BigInt
+    return 0n; 
+  }
+
+  // 2. Se è un array (caso Motoko Optional ?Int)
+  if (Array.isArray(val)) {
+    if (val.length === 0) return 0n;
+    return convertDate(val[0]); // Ricorsione sul contenuto
+  }
+
+  try {
+    // 3. Convertiamo in BigInt qualsiasi cosa sia (stringa, number, bigint)
+    const bigNs = BigInt(val);
+    // 4. Convertiamo Nanosecondi in Millisecondi
+    return bigNs / 1_000_000n;
+  } catch (e) {
+    console.error("Errore conversione data:", val, e);
+    return 0n;
+  }
 }
 
 /**
@@ -76,8 +95,8 @@ export function adaptThreadToStory(thread: BackendThread): Story {
     upvotes: Number(thread.likes),
     downvotes: Number(thread.dislikes),
 
-    createdAt: thread.createdAt,
-    publishedAt: thread.createdAt,
+    createdAt: convertDate(thread.createdAt),
+    publishedAt: convertDate(thread.createdAt),
 
     industryTags: industryTags, 
     country: country,
@@ -94,6 +113,6 @@ export function adaptComment(comment: BackendComment): Comment {
     body: comment.body,
     likes: Number(comment.likes),
     dislikes: Number(comment.dislikes),
-    createdAt: comment.createdAt,
+    createdAt: convertDate(comment.createdAt),
   };
 }
