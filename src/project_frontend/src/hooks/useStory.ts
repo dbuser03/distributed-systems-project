@@ -80,6 +80,8 @@ export function useStory(id: string | undefined): UseStoryResult {
     fetchData();
   }, [id, actor]);
 
+  console.log("useStory state:", { story, comments, isLoading, error });
+
   return {
     story,
     comments,
