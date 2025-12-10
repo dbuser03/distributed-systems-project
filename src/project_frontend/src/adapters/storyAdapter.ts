@@ -80,9 +80,8 @@ function adaptBackendFiles(
 ): StoryFile[] {
   if (!files || !Array.isArray(files) || files.length === 0) return [];
 
-  // Unwrap optional layer: opt vec vec nat8 → [ vec vec nat8 ]
-  const innerFiles = files[0]; // this is array of file byte arrays
-  const innerFileTypes = fileTypes?.[0] ?? []; // array of file names
+  const innerFiles = files[0];
+  const innerFileTypes = fileTypes?.[0] ?? []
 
   if (!Array.isArray(innerFiles)) return [];
 
