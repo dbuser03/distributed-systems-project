@@ -43,6 +43,7 @@ function StoryGalleryPage() {
     fetchThreads();
   }, []);
 
+
   const {
     filters,
     calendarMonth,
@@ -56,6 +57,14 @@ function StoryGalleryPage() {
     clearAllFilters,
     hasActiveFilters,
   } = useStoryFilters(stories);
+
+    if (isLoading) {
+    return (
+      <div className="min-h-full p-8 flex justify-center items-center">
+        <p className="animate-pulse">Loading stories...</p>
+      </div>
+    );
+  }
 
   const showEmptyState = filteredStories.length === 0 && hasActiveFilters;
 
