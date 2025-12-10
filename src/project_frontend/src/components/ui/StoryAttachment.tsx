@@ -56,16 +56,8 @@ function StoryAttachment({ file }: StoryAttachmentProps) {
 
   const handleDownload = () => {
     try {
-      // Convert base64 to blob
-      const byteCharacters = atob(fileData);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
+      const byteArray = new Uint8Array(fileData);
       const blob = new Blob([byteArray]);
-
-      // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -80,14 +72,22 @@ function StoryAttachment({ file }: StoryAttachmentProps) {
     }
   };
 
-  const getFileSize = (base64: string): string => {
-    // Approximate size calculation from base64
-    const sizeInBytes = (base64.length * 3) / 4;
-    if (sizeInBytes < 1024) return `${sizeInBytes.toFixed(0)} B`;
-    if (sizeInBytes < 1024 * 1024)
-      return `${(sizeInBytes / 1024).toFixed(1)} KB`;
-    return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
+
+  function getFileSizeFromBytes(bytes: number[]): string {
+    if (!bytes || bytes.length === 0) return "0 B";
+
+    const size = bytes.length; // raw byte count
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0;
+    let s = size;
+
+    while (s >= 1024 && i < units.length - 1) {
+      s /= 1024;
+      i++;
+    }
+
+    return `${s.toFixed(1)} ${units[i]}`;
+  }
 
   return (
     <div className="card bg-base-100 border border-base-300 mb-2">
@@ -117,7 +117,7 @@ function StoryAttachment({ file }: StoryAttachmentProps) {
                 </h3>
               </div>
               <p className="text-xs text-base-content/60">
-                Attachment • {getFileSize(fileData)}
+                Attachment • {getFileSizeFromBytes(fileData)}
               </p>
             </div>
           </div>

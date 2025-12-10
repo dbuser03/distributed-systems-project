@@ -15,7 +15,7 @@ export type EncryptionMetadata = {
 
 export type StoryFile = {
   fileName: string;
-  fileData: string; // base64 encoded
+  fileData: number[]; // Nat8 encoded
 };
 
 export type Story = {
