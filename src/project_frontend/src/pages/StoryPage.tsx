@@ -6,11 +6,34 @@ import {
   StoryContent,
   StoryVoteSection,
 } from "../components/ui";
+import { StoryAttachments } from "../components/ui/StoryAttachment";
 import { useStory } from "../hooks";
+import CommentThread, { Comment } from "../components/ui/CommentThread";
 
 function StoryPage() {
   const { id } = useParams<{ id: string }>();
   const { story, error } = useStory(id);
+
+  const comments: Comment[] = [
+    {
+      id: "1",
+      threadId: "1",
+      author: "John Doe",
+      body: "This is a comment",
+      likes: 0,
+      dislikes: 0,
+      createdAt: BigInt(1718000000000),
+    },
+    {
+      id: "2",
+      threadId: "1",
+      author: "Jane Doe",
+      body: "This is another comment",
+      likes: 0,
+      dislikes: 0,
+      createdAt: BigInt(1718000000000),
+    },
+  ];
 
   if (error || !story) {
     return <NotFoundError message="Story not found" />;
@@ -21,12 +44,19 @@ function StoryPage() {
       <article className="w-full max-w-5xl">
         <StoryHeader story={story} />
         <StoryContent content={story.content} />
+        {story.files && story.files.length > 0 && (
+          <div className="mt-8">
+            <StoryAttachments files={story.files} />
+          </div>
+        )}
         <StoryVoteSection
           storyId={story.id}
           upvotes={story.upvotes}
           downvotes={story.downvotes}
         />
       </article>
+
+      <CommentThread comments={comments ?? []} threadId={story.id} />
     </div>
   );
 }

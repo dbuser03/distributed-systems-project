@@ -165,7 +165,7 @@ module {
   public func getThreads(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     ids : [ThreadId],
-  ) : [Thread] {
+  ) : async [Thread] {
     var result : [Thread] = [];
     for (id in ids.vals()) {
       let res = threadsStore.get(id);
@@ -282,10 +282,10 @@ module {
     caller : Principal,
     input : FeedbackInput,
     commentId : CommentId,
-  ) : async { #status : Int } {
+  ) : async (status : Int) {
     switch (commentsStore.get(commentId)) {
       case (null) {
-        #status(404);
+        404;
       };
       case (?comment) {
         let alreadyLiked : Bool = false;
@@ -300,7 +300,7 @@ module {
         );
 
         if (result.status != 200) {
-          return #status(result.status);
+          return result.status;
         };
 
         let updatedComment : Comment = {
@@ -313,7 +313,7 @@ module {
           createdAt = comment.createdAt;
         };
         commentsStore.put(comment.id, updatedComment);
-        #status(200);
+        return 200;
       };
     };
   };
