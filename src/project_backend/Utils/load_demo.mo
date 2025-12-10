@@ -58,13 +58,13 @@ module {
         commentsStore : HashMap.HashMap<CommentId, Comment>,
         scoreIndexHash : HashMap.HashMap<ThreadId, Int>,
         tagIndex : HashMap.HashMap<Text, [ThreadId]>,
-    ) : async { #ok : Principal; #err : Text } {
+    ) : async (status : Int) {
 
         let userRes = await seedDemoData(users);
 
         switch (userRes) {
             case (#err msg) {
-                return #err(msg);
+                return 500;
             };
             case (#ok dummyPrincipal) {
                 let now = Time.now();
@@ -107,7 +107,7 @@ module {
                     };
                 };
 
-                return #ok(dummyPrincipal);
+                return 200;
             };
         };
     };

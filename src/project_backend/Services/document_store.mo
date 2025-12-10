@@ -165,7 +165,7 @@ module {
   public func getThreads(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     ids : [ThreadId],
-  ) : [Thread] {
+  ) : async [Thread] {
     var result : [Thread] = [];
     for (id in ids.vals()) {
       let res = threadsStore.get(id);

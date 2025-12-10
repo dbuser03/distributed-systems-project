@@ -104,7 +104,7 @@ persistent actor Forum {
   public shared func getThreads(
     ids : [ThreadId]
   ) : async [Thread] {
-    DocumentStore.getThreads(threadsStore, ids);
+    await DocumentStore.getThreads(threadsStore, ids);
   };
 
   public shared func getHydratedThread(
@@ -165,12 +165,18 @@ persistent actor Forum {
     startIdx : Int,
     endIdx : Int,
   ) : async [Thread] {
+    if (scoreIndexOrdered.size() == 0 and scoreIndexHash.size() == 0) {
+      if (isScoreIndexSorted) {
+        isScoreIndexSorted := false;
+      };
+      return [];
+    };
     if (not isScoreIndexSorted) {
-      scoreIndexOrdered := ReverseIndexes.orderScoreIndex(scoreIndexHash);
+      scoreIndexOrdered := await ReverseIndexes.orderScoreIndex(scoreIndexHash);
       isScoreIndexSorted := true;
     };
 
-    ReverseIndexes.sliceByScore(
+    await ReverseIndexes.sliceByScore(
       threadsStore,
       scoreIndexOrdered,
       startIdx,
@@ -361,8 +367,10 @@ persistent actor Forum {
   };
 
   // ----------- Demo Call ---------------
-  public shared func createDemo() : async () {
-    ignore await Demo.seedAllDemoData(users, threadsStore, commentsStore, scoreIndexHash, tagIndex);
+  public shared func createDemo() : async (status : Int) {
+    isScoreIndexSorted := false;
+    await Demo.seedAllDemoData(users, threadsStore, commentsStore, scoreIndexHash, tagIndex);
+
   };
 
 };
