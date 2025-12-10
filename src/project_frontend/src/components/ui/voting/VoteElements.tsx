@@ -66,7 +66,7 @@ export function VoteButton({
 }
 
 interface VoteScoreProps {
-  score: bigint;
+  score: number;
   userVote: VoteType;
   formattedScore: string;
   size?: "xs" | "sm" | "md";
