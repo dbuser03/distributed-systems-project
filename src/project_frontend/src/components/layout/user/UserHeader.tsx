@@ -15,7 +15,18 @@ export function UserHeader({
 }: UserHeaderProps) {
   return (
     <div className="border-b border-base-300 pb-4 mb-6">
-      <h1 className="text-4xl font-bold mb-8">User {userId}</h1>
+      <h1
+        className="text-4xl font-bold mb-8 truncate max-w-full"
+        style={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: "100%",
+        }}
+        title={userId}
+      >
+        User <span>{userId}</span>
+      </h1>
       <UserStats
         credibilityScore={credibilityScore}
         threadCount={threadCount}
