@@ -5,6 +5,7 @@ import HashMap "mo:base/HashMap";
 import Types "../Model/types";
 
 module {
+  public type VoteType = Types.VoteType;
   public func newId() : async Text {
     let rand : Blob = await Random.blob();
     let hex : [Text] = [
@@ -40,7 +41,7 @@ module {
   };
 
   public func applyVote(
-    voteType : Text,
+    voteType : VoteType,
     likes : Nat,
     dislikes : Nat,
     alreadyLiked : Bool,
@@ -50,26 +51,30 @@ module {
     var newLikes = likes;
     var newDislikes = dislikes;
 
-    if (voteType == "like") {
-      if (alreadyLiked) {
-        if (newLikes > 0) { newLikes -= 1 };
-      } else {
-        newLikes += 1;
-        if (alreadyDisliked and newDislikes > 0) {
-          newDislikes -= 1;
+    switch (voteType) {
+      case (#like) {
+        if (alreadyLiked) {
+          if (newLikes > 0) { newLikes -= 1 };
+        } else {
+          newLikes += 1;
+          if (alreadyDisliked and newDislikes > 0) {
+            newDislikes -= 1;
+          };
         };
       };
-    } else if (voteType == "dislike") {
-      if (alreadyDisliked) {
-        if (newDislikes > 0) { newDislikes -= 1 };
-      } else {
-        newDislikes += 1;
-        if (alreadyLiked and newLikes > 0) {
-          newLikes -= 1;
+      case (#dislike) {
+        if (alreadyDisliked) {
+          if (newDislikes > 0) { newDislikes -= 1 };
+        } else {
+          newDislikes += 1;
+          if (alreadyLiked and newLikes > 0) {
+            newLikes -= 1;
+          };
         };
       };
-    } else {
-      return { likes = likes; dislikes = dislikes; status = 400 };
+      case (#none) {
+        return { likes = likes; dislikes = dislikes; status = 400 };
+      };
     };
 
     { likes = newLikes; dislikes = newDislikes; status = 200 };
@@ -104,13 +109,13 @@ module {
   };
 
   public func isValidUser(
-  id : Principal,
-  users : HashMap.HashMap<Principal, Types.User>
-) : Bool {
-  switch (users.get(id)) {
-    case (?u) { not u.isBanned };
-    case (null) { false };
+    id : Principal,
+    users : HashMap.HashMap<Principal, Types.User>,
+  ) : Bool {
+    switch (users.get(id)) {
+      case (?u) { not u.isBanned };
+      case (null) { false };
+    };
   };
-};
 
 };
