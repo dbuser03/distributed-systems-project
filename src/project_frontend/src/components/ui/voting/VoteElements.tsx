@@ -4,7 +4,7 @@ import { VoteType } from "../../../types";
 interface VoteArrowProps {
   direction: "up" | "down";
   isActive: boolean;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 }
 
 export function VoteArrow({
@@ -12,7 +12,8 @@ export function VoteArrow({
   isActive,
   size = "md",
 }: VoteArrowProps) {
-  const sizeClass = size === "sm" ? "w-4 h-4" : "w-5 h-5";
+  const sizeClass =
+    size === "xs" ? "w-3 h-3" : size === "sm" ? "w-4 h-4" : "w-5 h-5";
   const path =
     direction === "up" ? "M12 4L3 15h18L12 4z" : "M12 20L3 9h18L12 20z";
 
@@ -34,7 +35,7 @@ interface VoteButtonProps {
   direction: "up" | "down";
   isActive: boolean;
   onClick: (e: React.MouseEvent) => void;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 }
 
 export function VoteButton({
@@ -46,7 +47,8 @@ export function VoteButton({
   const isUpvote = direction === "up";
   const activeColor = isUpvote ? "text-success" : "text-error";
   const hoverColor = isUpvote ? "hover:text-success" : "hover:text-error";
-  const btnSize = size === "sm" ? "btn-xs" : "btn-sm";
+  const btnSize =
+    size === "xs" ? "btn-xs" : size === "sm" ? "btn-xs" : "btn-sm";
 
   return (
     <button
@@ -64,10 +66,10 @@ export function VoteButton({
 }
 
 interface VoteScoreProps {
-  score: number;
+  score: bigint;
   userVote: VoteType;
   formattedScore: string;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
 }
 
 export function VoteScore({
@@ -75,8 +77,14 @@ export function VoteScore({
   formattedScore,
   size = "md",
 }: VoteScoreProps) {
-  const textSize = size === "sm" ? "text-sm" : "text-base";
-  const fontWeight = size === "sm" ? "font-semibold" : "font-bold";
+  const textSize =
+    size === "xs" ? "text-xs" : size === "sm" ? "text-sm" : "text-base";
+  const fontWeight =
+    size === "xs"
+      ? "font-medium"
+      : size === "sm"
+      ? "font-semibold"
+      : "font-bold";
 
   return (
     <span

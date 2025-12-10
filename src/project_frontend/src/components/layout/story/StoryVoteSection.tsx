@@ -20,7 +20,7 @@ function StoryVoteSection({
           storyId={storyId}
           initialUpvotes={upvotes}
           initialDownvotes={downvotes}
-          compact
+          variant="compact"
         />
       </div>
     </div>

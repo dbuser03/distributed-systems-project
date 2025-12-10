@@ -3,28 +3,34 @@ import { useVote } from "../../../hooks";
 import { formatScore } from "../../../lib";
 import { VoteButton, VoteScore } from "../voting";
 
+type VoteButtonsVariant = "default" | "compact" | "small";
+
 interface VoteButtonsProps {
   storyId: string;
   initialUpvotes: number;
   initialDownvotes: number;
-  compact?: boolean;
+  variant?: VoteButtonsVariant;
 }
 
 function VoteButtons({
   storyId,
   initialUpvotes,
   initialDownvotes,
-  compact = false,
+  variant = "default",
 }: VoteButtonsProps) {
   const { userVote, score, handleVote } = useVote({
     initialUpvotes,
     initialDownvotes,
   });
 
-  const size = compact ? "sm" : "md";
-  const containerClass = compact
-    ? "flex items-center gap-1 bg-base-200 rounded-full px-2 py-1"
-    : "flex flex-col items-center gap-1 bg-base-200 rounded-lg px-2 py-2";
+  const size = variant === "small" ? "xs" : variant === "compact" ? "sm" : "md";
+
+  const containerClass =
+    variant === "small"
+      ? "flex flex-col items-center gap-0.5 bg-transparent"
+      : variant === "compact"
+      ? "flex items-center gap-1 bg-base-200 rounded-full px-2 py-1"
+      : "flex flex-col items-center gap-1 bg-base-200 rounded-lg px-2 py-2";
 
   return (
     <div className={containerClass}>
