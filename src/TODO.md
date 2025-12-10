@@ -6,5 +6,5 @@
 
 - [] add country in the story header
 - [] add credibility score in the user header
-- [] make the voting system responsive
-- [] implement "next page" call in the front page 
+- [x] make the voting system responsive
+- [x] implement "next page" call in the front page 

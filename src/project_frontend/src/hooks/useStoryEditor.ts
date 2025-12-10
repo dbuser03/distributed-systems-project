@@ -13,7 +13,7 @@ export interface StoryFormData {
   content: string;
   industryTags: ISICSectionKey[];
   industryTagInput: string;
-  file?: File | null;
+  file?: File[] | null;
 }
 
 const initialFormData: StoryFormData = {
@@ -104,27 +104,33 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       if (!canPublish || !actor) return;
 
       try {
-        // Convert file to [Nat8] (number[]) if present
-        let fileBytes: number[] | null = null;
-        let fileName: string | null = null;
+  let file: [] | [number[][]] = [];
+  let fileType: [] | [string[]] = [];
 
-        if (formData.file) {
-          const arrayBuffer = await formData.file.arrayBuffer();
-          const uint8 = new Uint8Array(arrayBuffer);
+  if (formData.file && formData.file.length > 0) {
+    const buffers = await Promise.all(
+      formData.file.map((f) => f.arrayBuffer())
+    );
 
-          // Uint8Array -> number[] (Candid vec nat8)
-          fileBytes = Array.from(uint8);
-          fileName = formData.file.name;
-        }
+    const fileBytesList: number[][] = buffers.map((arrayBuffer) => {
+      const uint8 = new Uint8Array(arrayBuffer);
+      return Array.from(uint8);
+    });
 
-        const input = {
-          title: formData.title,
-          abstract: formData.preview,
-          body: formData.content,
-          tags: formData.industryTags,
-          file: fileBytes ? [[fileBytes]] : [],
-          fileType: fileName ? [[fileName]] : [],
-        };
+    const fileNames: string[] = formData.file.map((f) => f.name);
+
+    file = [fileBytesList];
+    fileType = [fileNames];
+  }
+
+  const input = {
+    title: formData.title,
+    abstract: formData.preview,
+    body: formData.content,
+    tags: formData.industryTags,
+    file,
+    fileType,
+  };
 
         const result = await actor.createThread(input);
 

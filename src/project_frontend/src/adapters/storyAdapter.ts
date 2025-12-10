@@ -2,6 +2,7 @@
 
 import { Principal } from "@dfinity/principal";
 import { Story, ISICSectionKey, CountryCode } from "../types";
+import { StoryFile } from "../types";
 
 import { Comment } from "../components/ui/CommentThread";
 
@@ -72,6 +73,25 @@ function convertDate(val: bigint): bigint {
   }
 }
 
+
+function adaptBackendFiles(
+  files: any[] | undefined,
+  fileTypes: any[] | undefined
+): StoryFile[] {
+  if (!files || !Array.isArray(files) || files.length === 0) return [];
+
+  const innerFiles = files[0];
+  const innerFileTypes = fileTypes?.[0] ?? []
+
+  if (!Array.isArray(innerFiles)) return [];
+
+  return innerFiles.map((fileBytes: any, index: number) => ({
+    fileName: innerFileTypes[index] ?? "unknown",
+    fileData: fileBytes ?? [],
+  }));
+}
+
+
 /**
  * Convert a BackendThread to a Story
  */
@@ -100,6 +120,8 @@ export function adaptThreadToStory(thread: BackendThread): Story {
 
     industryTags: industryTags, 
     country: country,
+    files: adaptBackendFiles(thread.file, thread.fileType), 
+    
 
     status: "VERIFIED",
   };
