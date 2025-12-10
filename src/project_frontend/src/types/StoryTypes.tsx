@@ -14,28 +14,18 @@ export type EncryptionMetadata = {
 };
 
 export type Story = {
-  // Public fields
   id: string;
+  author: string;
   title: string;
-  preview: string;
-
-  // Private fields
-  content: string;
-  encryption: EncryptionMetadata;
-
-  status: StoryStatus;
-
-  createdAt: BigInt;
-  publishedAt: BigInt | null;
-  // ISIC sections - industries
-  industryTags: ISICSectionKey[];
-  country: CountryCode;
-
-  publisherId: string;
-
-  // Voting
-  upvotes: number;
-  downvotes: number;
+  abstract: string;
+  body: string;
+  tags: string[];
+  file?: string[] | null;
+  fileType?: string[] | null;
+  comments?: string[] | null;
+  likes: number;
+  dislikes: number;
+  createdAt: bigint;
 };
 
 export type VoteType = "up" | "down" | null;
