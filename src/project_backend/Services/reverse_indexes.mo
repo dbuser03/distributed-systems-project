@@ -14,7 +14,6 @@ module {
   public type Comment = Types.Comment;
   public type CommentInput = Types.CommentInput;
   public type HydratedThread = Types.HydratedThread;
-  public type FeedbackInput = Types.FeedbackInput;
 
   // This does not return the hydrated comments as it is intended to be used when retrieving the list of results that then can be clicked and opened.
   public func getThreadsByTags(

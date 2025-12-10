@@ -27,6 +27,8 @@ module {
     comments: [CommentId]; // New field to store the user’s created comments
     likedThreads: [ThreadId]; // New field to store the threads the user liked
     dislikedThreads: [ThreadId]; // New field to store the threads the user disliked
+    likedComments: [CommentId];
+    dislikedComments: [CommentId];
   };
 
   public type ThreadInput = {
@@ -83,7 +85,9 @@ module {
     createdAt : Time.Time;
   };
 
-  public type FeedbackInput = {
-    voteType : Text;
+  public type VoteType = {
+    #like;
+    #dislike;
+    #none
   };
 };
