@@ -281,7 +281,15 @@ module {
           createdAt = thread.createdAt;
         };
         threadsStore.put(thread.id, updatedThread);
-        #newScore(result.likes - result.dislikes);
+        let usrUpd = await UserLogic.updateUserCredibilityScore(users, thread.author, voteType);
+        switch(usrUpd) {
+          case(#status(404)) {
+            return #status(500);
+          };
+          case(#status(_)) {
+          }
+        };
+        return #newScore(result.likes - result.dislikes);
       };
     };
   };
@@ -330,6 +338,14 @@ module {
           createdAt = comment.createdAt;
         };
         commentsStore.put(comment.id, updatedComment);
+        let usrUpd = await UserLogic.updateUserCredibilityScore(users, comment.author, voteType);
+        switch(usrUpd) {
+          case(#status(404)) {
+            return 500;
+          };
+          case(#status(_)) {
+          }
+        };
         return 200;
       };
     };
