@@ -32,8 +32,8 @@ export function StoryEditorForm({
   onCancel,
 }: StoryEditorFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    onUpdateField("file", file);
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    onUpdateField("file", files as StoryFormData["file"]);
   };
 
   return (
@@ -68,18 +68,22 @@ export function StoryEditorForm({
         </div>
         <div className="flex-1">
           <fieldset className="fieldset">
-            <legend className="fieldset-legend">Pick a file</legend>
+            <legend className="fieldset-legend">Pick file(s)</legend>
             <div className="flex gap-2 items-start">
               <input
                 type="file"
                 className="file-input flex-1"
+                multiple
                 onChange={handleFileChange}
               />
             </div>
-            {formData.file && (
-              <p className="text-sm text-gray-600 mt-1">
-                Selected: {formData.file.name}
-              </p>
+
+            {formData.file && formData.file.length > 0 && (
+              <ul className="text-sm text-gray-600 mt-1 list-disc list-inside">
+                {formData.file.map((f, idx) => (
+                  <li key={idx}>{f.name}</li>
+                ))}
+              </ul>
             )}
           </fieldset>
         </div>
