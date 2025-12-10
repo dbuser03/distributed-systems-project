@@ -104,14 +104,20 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       if (!canPublish || !actor) return;
 
       try {
-        // Converti il file in array di Blob se presente
-        let fileBlobs: Uint8Array[] | undefined = undefined;
-        let fileTypes: string[] | undefined = undefined;
+        // Convert file to base64 format if present
+        let fileBase64: string | undefined = undefined;
+        let fileName: string | undefined = undefined;
 
         if (formData.file) {
+          // Convert file to base64
           const arrayBuffer = await formData.file.arrayBuffer();
-          fileBlobs = [new Uint8Array(arrayBuffer)];
-          fileTypes = [formData.file.type];
+          const bytes = new Uint8Array(arrayBuffer);
+          const base64 = btoa(
+            bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
+          );
+          fileBase64 = base64;
+          // Pass filename with extension (e.g., "example.png")
+          fileName = formData.file.name;
         }
 
         const input = {
@@ -119,8 +125,8 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
           abstract: formData.preview,
           body: formData.content,
           tags: formData.industryTags,
-          file: fileBlobs ? [fileBlobs] : [],
-          fileType: fileTypes ? [fileTypes] : [],
+          file: fileBase64 ? [fileBase64] : [],
+          fileType: fileName ? [fileName] : [],
         };
 
         const result = await actor.createThread(input);
