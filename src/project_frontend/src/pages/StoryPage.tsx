@@ -42,11 +42,11 @@ function StoryPage() {
     <div className="min-h-full p-8 flex flex-col items-center">
       <article className="w-full max-w-5xl">
         <StoryHeader story={story} />
-        <StoryContent content={story.body} />
+        <StoryContent content={story.content} />
         <StoryVoteSection
           storyId={story.id}
-          upvotes={story.likes}
-          downvotes={story.dislikes}
+          upvotes={story.upvotes}
+          downvotes={story.downvotes}
         />
       </article>
 
