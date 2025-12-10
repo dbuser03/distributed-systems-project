@@ -60,7 +60,7 @@ function CommentThread({
   };
 
   const commentForm = (
-    <div className="card bg-base-100 shadow-sm border border-base-300 mb-4">
+    <div className="card bg-base-100 border border-base-300 mb-4">
       <div className="card-body p-4">
         {!isAuthenticated ? (
           <div className="alert alert-soft py-2 justify-between flex">
@@ -111,7 +111,7 @@ function CommentThread({
       <div className="mt-12 w-full max-w-5xl">
         <h2 className="text-3xl font-bold mb-6">Comments</h2>
         {commentForm}
-        <div className="alert alert-info shadow-md">
+        <div className="alert alert-info">
           <span>No comments yet. Be the first to comment!</span>
         </div>
       </div>
@@ -126,7 +126,7 @@ function CommentThread({
         {comments.map((comment) => (
           <div
             key={comment.id}
-            className="card bg-base-100 shadow-sm border border-base-300"
+            className="card bg-base-100 border border-base-300"
           >
             <div className="card-body p-3">
               <div className="flex items-start gap-3">
