@@ -39,7 +39,7 @@ module {
   for ((tid, _) in seen.entries()) {
     collected := Array.append(collected, [tid]);
   };
-  return DocumentStore.getThreads(threadsStore, collected);
+  return await DocumentStore.getThreads(threadsStore, collected);
 };
 
   public func indexThreadTags(
@@ -62,7 +62,7 @@ module {
 
   public func orderScoreIndex(
     scoreIndexHash : HashMap.HashMap<ThreadId, Int>
-  ) : [(Int, ThreadId)] {
+  ) : async [(Int, ThreadId)] {
     var tmp : [(Int, ThreadId)] = [];
     for ((id, score) in scoreIndexHash.entries()) {
       tmp := Array.append(tmp, [(score, id)]);
@@ -92,7 +92,7 @@ module {
     ordered : [(Int, ThreadId)],
     startIdx : Int,
     endIdx : Int,
-  ) : [Thread] {
+  ) : async [Thread] {
     let n = ordered.size();
     let from = if (startIdx < 0) 0 else startIdx;
     let to = if (endIdx >= n) n - 1 else endIdx;
@@ -110,7 +110,7 @@ module {
       i += 1;
     };
 
-    DocumentStore.getThreads(threadsStore, idxList);
+    await DocumentStore.getThreads(threadsStore, idxList);
   };
 
   public func indexThreadByScore(
