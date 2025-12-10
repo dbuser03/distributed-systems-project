@@ -52,6 +52,7 @@ module {
     likes : Nat;
     dislikes : Nat;
     createdAt : Time.Time;
+    isValidated : Bool;
   };
 
   public type HydratedThread = {
@@ -67,6 +68,7 @@ module {
     likes : Nat;
     dislikes : Nat;
     createdAt : Time.Time;
+    isValidated : Bool;
   };
 
   public type Comment = {
