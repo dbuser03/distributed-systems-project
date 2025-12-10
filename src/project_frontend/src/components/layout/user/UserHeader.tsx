@@ -1,3 +1,6 @@
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftIcon } from "../../icons/CommonIcons";
+
 interface UserHeaderProps {
   userId: string;
   credibilityScore: number;
@@ -13,6 +16,7 @@ export function UserHeader({
   contributionCount,
   role,
 }: UserHeaderProps) {
+  const navigate = useNavigate();
   return (
     <div className="border-b border-base-300 pb-4 mb-6">
       <h1
