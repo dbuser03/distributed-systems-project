@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { mockStories } from "../data";
+import { Story } from "../types";
+
+import { useAuth } from "../context/authContext";
+
 import {
   StoryLink,
   SearchInput,
@@ -9,7 +12,40 @@ import {
 } from "../components/ui";
 import { useStoryFilters } from "../hooks";
 
+import { adaptThreadToStory, BackendThread } from "../adapters/storyAdapter";
+
 function StoryGalleryPage() {
+
+  const [stories, setStories] = useState<Story[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { actor } = useAuth();
+
+  useEffect(() => {
+    const fetchThreads = async () => {
+      try {
+        setIsLoading(true);
+        console.log("Fetching threads from Forum canister...");
+
+        // 2. Chiamata all'actor pubblico 'forum'
+        // Nota: i numeri 0n e 50n sono BigInt richiesti da Motoko
+        const rawThreads = await actor.getThreadsByScore(0n, 50n);
+        
+        // 3. Conversione usando l'adapter che abbiamo creato
+        // Usiamo 'unknown' per evitare conflitti tra i tipi generati e la nostra interfaccia
+        const adaptedStories = (rawThreads as unknown as BackendThread[]).map(adaptThreadToStory);
+
+        setStories(adaptedStories);
+      } catch (error) {
+        console.error("Errore nel caricamento dei thread:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchThreads();
+  }, []);
+
   const {
     filters,
     calendarMonth,
@@ -22,7 +58,7 @@ function StoryGalleryPage() {
     setVerifiedOnly,
     clearAllFilters,
     hasActiveFilters,
-  } = useStoryFilters(mockStories);
+  } = useStoryFilters(stories);
 
   const showEmptyState = filteredStories.length === 0 && hasActiveFilters;
 

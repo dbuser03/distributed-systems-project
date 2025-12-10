@@ -29,7 +29,7 @@ interface AuthContextType {
   login: () => Promise<void>;
   logout: () => Promise<void>;
   updateAlias: (newAlias: string) => Promise<void>;
-  actor: ForumActor | null;
+  actor: ForumActor;
   authClient: AuthClient | null;
 }
 
@@ -55,14 +55,11 @@ const parseRole = (roleVariant: any): UserRole => {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
-  const [actor, setActor] = useState<ForumActor | null>(null);
-
+  const [actor, setActor] = useState<ForumActor>(createActor(canisterId));
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const syncUserWithBackend = async (currentActor: ForumActor) => {
     try {
-      console.log("Sync with backend...");
-
       const result = await currentActor.login();
 
       if ("ok" in result) {
@@ -75,16 +72,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: roleStr,
           credibilityScore: Number(user.credibilityScore),
         });
-
-        console.log(`Login successful. Alias: ${user.alias}, Role: ${roleStr}`);
       } else {
         const errorMsg = result.err;
-        console.error("Smth wrong:", errorMsg);
         alert(`ACCESSO NEGATO: ${errorMsg}`);
         await performLogout();
       }
     } catch (error) {
-      console.error("Critical error during backend login:", error);
+      console.error(error);
     }
   };
 
@@ -129,7 +123,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authClient.logout();
     }
     setIsAuthenticated(false);
-    setActor(null);
+    setActor(createActor(canisterId));
     setUserProfile(null);
   };
 
@@ -138,7 +132,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const updateAlias = async (newAlias: string): Promise<void> => {
-    if (!actor) return;
     try {
       const res = await actor.updateAlias(newAlias);
       if ("ok" in res) {
@@ -147,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         alert("Error updating profile: " + res.err);
       }
     } catch (e) {
-      console.error("Error updating alias:", e);
+      console.error(e);
     }
   };
 
