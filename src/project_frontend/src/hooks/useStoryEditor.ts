@@ -104,19 +104,16 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       if (!canPublish || !actor) return;
 
       try {
-        // Convert file to base64 format if present
-        let fileBase64: string | undefined = undefined;
-        let fileName: string | undefined = undefined;
+        // Convert file to [Nat8] (number[]) if present
+        let fileBytes: number[] | null = null;
+        let fileName: string | null = null;
 
         if (formData.file) {
-          // Convert file to base64
           const arrayBuffer = await formData.file.arrayBuffer();
-          const bytes = new Uint8Array(arrayBuffer);
-          const base64 = btoa(
-            bytes.reduce((data, byte) => data + String.fromCharCode(byte), "")
-          );
-          fileBase64 = base64;
-          // Pass filename with extension (e.g., "example.png")
+          const uint8 = new Uint8Array(arrayBuffer);
+
+          // Uint8Array -> number[] (Candid vec nat8)
+          fileBytes = Array.from(uint8);
           fileName = formData.file.name;
         }
 
@@ -125,11 +122,12 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
           abstract: formData.preview,
           body: formData.content,
           tags: formData.industryTags,
-          file: fileBase64 ? [fileBase64] : [],
-          fileType: fileName ? [fileName] : [],
+          file: fileBytes ? [[fileBytes]] : [],
+          fileType: fileName ? [[fileName]] : [],
         };
 
         const result = await actor.createThread(input);
+
 
         if ("id" in result) {
           console.log("Story published successfully with ID:", result.id);

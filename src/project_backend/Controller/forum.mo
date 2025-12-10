@@ -163,7 +163,7 @@ persistent actor Forum {
     #threads(res);
   };
 
-  public func getThreadsByScore(
+  public shared func getThreadsByScore(
     startIdx : Int,
     endIdx : Int,
   ) : async [Thread] {
@@ -186,15 +186,25 @@ persistent actor Forum {
     );
   };
 
+  public shared func getThreadsByTimeRange(
+    start : Time.Time,
+    end : Time.Time,
+  ) : async [Thread] {
+    await DocumentStore.getThreadsByTimeRange(threadsStore, start, end);
+  };
+
   // Get all threads (for gallery page)
   public shared func getAllThreads() : async [Thread] {
     let allThreads = Iter.toArray(threadsStore.vals());
     // Sort by creation time, newest first
-    Array.sort<Thread>(allThreads, func(a: Thread, b: Thread) : Order.Order {
-      if (a.createdAt > b.createdAt) { #less }
-      else if (a.createdAt < b.createdAt) { #greater }
-      else { #equal }
-    });
+    Array.sort<Thread>(
+      allThreads,
+      func(a : Thread, b : Thread) : Order.Order {
+        if (a.createdAt > b.createdAt) { #less } else if (a.createdAt < b.createdAt) {
+          #greater;
+        } else { #equal };
+      },
+    );
   };
 
   public query (message) func whoami() : async Principal {

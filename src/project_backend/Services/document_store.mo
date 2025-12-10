@@ -47,6 +47,7 @@ module {
       likes = 0;
       dislikes = 0;
       createdAt = Time.now();
+      isValidated = false;
     };
 
     threadsStore.put(id, doc);
@@ -103,6 +104,7 @@ module {
           likes = thread.likes;
           dislikes = thread.dislikes;
           createdAt = thread.createdAt;
+          isValidated = thread.isValidated;
         };
 
         threadsStore.put(thread.id, updatedThread);
@@ -179,6 +181,22 @@ module {
     return result;
   };
 
+  public func getThreadsByTimeRange(
+    threadsStore : HashMap.HashMap<ThreadId, Thread>,
+    start : Time.Time,
+    end : Time.Time,
+  ) : async [Thread] {
+
+    var result : [Thread] = [];
+    for (thread in threadsStore.vals()) {
+      if (thread.createdAt >= start and thread.createdAt <= end) {
+        result := Array.append(result, [thread]);
+      };
+    };
+
+    result;
+  };
+
   public func getHydratedThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     commentsStore : HashMap.HashMap<CommentId, Comment>,
@@ -224,6 +242,7 @@ module {
           likes = baseThread.likes;
           dislikes = baseThread.dislikes;
           createdAt = baseThread.createdAt;
+          isValidated = baseThread.isValidated;
         };
 
         #ok(hydrated);
@@ -270,6 +289,7 @@ module {
           likes = result.likes;
           dislikes = result.dislikes;
           createdAt = thread.createdAt;
+          isValidated = thread.isValidated;
         };
         threadsStore.put(thread.id, updatedThread);
         #newScore(result.likes - result.dislikes);
@@ -450,67 +470,115 @@ module {
     };
   };
 
-
   public func deleteComment(
-  threadsStore : HashMap.HashMap<ThreadId, Thread>,
-  commentsStore : HashMap.HashMap<CommentId, Comment>,
-  caller : Principal,
-  commentId : CommentId,
-) : async ( status : Int ) {
-  switch (commentsStore.get(commentId)) {
-    case (null) {
-      return (404);
-    };
-    case (?comm) {
-      if (comm.author != caller) {
-        return 403;
+    threadsStore : HashMap.HashMap<ThreadId, Thread>,
+    commentsStore : HashMap.HashMap<CommentId, Comment>,
+    caller : Principal,
+    commentId : CommentId,
+  ) : async (status : Int) {
+    switch (commentsStore.get(commentId)) {
+      case (null) {
+        return (404);
       };
-      switch (threadsStore.get(comm.threadId)) {
-        case (null) {
-          ignore commentsStore.remove(commentId);
-          return 204;
+      case (?comm) {
+        if (comm.author != caller) {
+          return 403;
         };
+        switch (threadsStore.get(comm.threadId)) {
+          case (null) {
+            ignore commentsStore.remove(commentId);
+            return 204;
+          };
 
-        case (?thread) {
-          let updatedCommentsOpt : ?[CommentId] = switch (thread.comments) {
-            case (null) {
-              null;
-            };
-            case (?list) {
-              let filtered = Array.filter<CommentId>(
-                list,
-                func (cid : CommentId) : Bool {
-                  cid != commentId;
-                },
-              );
-              if (filtered.size() == 0) {
+          case (?thread) {
+            let updatedCommentsOpt : ?[CommentId] = switch (thread.comments) {
+              case (null) {
                 null;
-              } else {
-                ?filtered;
+              };
+              case (?list) {
+                let filtered = Array.filter<CommentId>(
+                  list,
+                  func(cid : CommentId) : Bool {
+                    cid != commentId;
+                  },
+                );
+                if (filtered.size() == 0) {
+                  null;
+                } else {
+                  ?filtered;
+                };
               };
             };
+            let updatedThread : Thread = {
+              id = thread.id;
+              author = thread.author;
+              title = thread.title;
+              abstract = thread.abstract;
+              body = thread.body;
+              tags = thread.tags;
+              file = thread.file;
+              fileType = thread.fileType;
+              comments = updatedCommentsOpt;
+              likes = thread.likes;
+              dislikes = thread.dislikes;
+              createdAt = thread.createdAt;
+              isValidated = thread.isValidated;
+            };
+            threadsStore.put(thread.id, updatedThread);
+            ignore commentsStore.remove(commentId);
+            return 204;
           };
-          let updatedThread : Thread = {
-            id = thread.id;
-            author = thread.author;
-            title = thread.title;
-            abstract = thread.abstract;
-            body = thread.body;
-            tags = thread.tags;
-            file = thread.file;
-            fileType = thread.fileType;
-            comments = updatedCommentsOpt;
-            likes = thread.likes;
-            dislikes = thread.dislikes;
-            createdAt = thread.createdAt;
-          };
-          threadsStore.put(thread.id, updatedThread);
-          ignore commentsStore.remove(commentId);
-          return 204;
         };
       };
     };
   };
-}
+
+  public func validateThread(
+    caller : Principal,
+    threadId : ThreadId,
+    users : HashMap.HashMap<Principal, Types.User>,
+    threadsStore : HashMap.HashMap<ThreadId, Thread>,
+  ) : { #ok : ThreadId; #err : Int } {
+
+    switch (users.get(caller)) {
+      case (null) {
+        return #err(401);
+      };
+      case (?u) {
+        switch (u.role) {
+          case (#Verifier) {};
+          case (_) {
+            return #err(401);
+          };
+        };
+      };
+    };
+
+    switch (threadsStore.get(threadId)) {
+      case (null) {
+        return #err(404);
+      };
+      case (?th) {
+        let updated = {
+          id = th.id;
+          author = th.author;
+          title = th.title;
+          abstract = th.abstract;
+          body = th.body;
+          tags = th.tags;
+          file = th.file;
+          fileType = th.fileType;
+          comments = th.comments;
+          likes = th.likes;
+          dislikes = th.dislikes;
+          createdAt = th.createdAt;
+          isValidated = true;
+        };
+
+        threadsStore.put(threadId, updated);
+        return #ok(threadId);
+      };
+    };
+  };
 
 };
