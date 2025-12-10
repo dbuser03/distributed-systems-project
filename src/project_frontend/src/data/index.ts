@@ -86,9 +86,22 @@ export const mockStories: Story[] = [
     industryTags: ["A", "M"],
     country: "US",
     publisherId: "501",
+    files: [
+      {
+        fileName: "financial_records_agritech.pdf",
+        fileData:
+          "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCA1OTUgODQyXS9Db250ZW50cyA0IDAgUj4+CmVuZG9iago0IDAgb2JqCjw8L0xlbmd0aCA0ND4+CnN0cmVhbQpCVAovRjEgMTIgVGYKNzIgNzIwIFRkCihBZ3JpdGVjaCBMdGQuIC0gRmluYW5jaWFsIERpc2NyZXBhbmNpZXMpIFRqCjAgLTI0IFRkCihEb2N1bWVudGVkIEV2aWRlbmNlIG9mIEZyYXVkdWxlbnQgQWN0aXZpdGllcykgVGoKMCAtNDggVGQKKFRoaXMgZG9jdW1lbnQgY29udGFpbnMgZXZpZGVuY2Ugb2YgZmluYW5jaWFsIG1pc3JlcG9ydGluZy4pIFRqCkVUCmVuZHN0cmVhbQplbmRvYmoKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKNSAwIG9iago8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2E+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmDQowMDAwMDAwMzU4IDAwMDAwIG4NCjAwMDAwMDA0MDcgMDAwMDAgbg0KMDAwMDAwMDAxNSAwMDAwMCBuDQowMDAwMDAwMTA0IDAwMDAwIG4NCjAwMDAwMDA0NjYgMDAwMDAgbg0KdHJhaWxlcgo8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo1MzUKJSVFT0Y=",
+      },
+      {
+        fileName: "audit_report_2024.docx",
+        fileData:
+          "UEsDBBQABgAIAAAAIQDfpNJsWgEAACAFAAATAAgCW0NvbnRlbnRfVHlwZXNdLnhtbCCiBAIooAAC",
+      },
+    ],
     upvotes: 342,
     downvotes: 23,
   },
+  // Removed duplicate story 1b, merged its file into story 1's files array above
   {
     id: "2",
     title: "Unlawful Data Collection in the Telecom Industry",
@@ -134,6 +147,13 @@ export const mockStories: Story[] = [
     industryTags: ["C", "E", "O"],
     country: "IT",
     publisherId: "825",
+    files: [
+      {
+        fileName: "pollution_test_results.xlsx",
+        fileData:
+          "UEsDBBQAAAAIAAAAAAAAAAAAAAAAAAAAAAAIAAAAbWltZXR5cGVhcHBsaWNhdGlvbi92bmQub3BlbnhtbGZvcm1hdHMtb2ZmaWNlZG9jdW1lbnQuc3ByZWFkc2hlZXRtbC5zaGVldFBLAwQUAAAACAAAAAAAAAAAAAAAAAAAAAAAABMAAAB4bC93b3Jrc2hlZXRzL3NoZWV0MS54bWyNkMFqwzAMhu95h6B7Y2cdg9GlZTDYZbttt+YBYluJR2wZWR6lb786S+lhXLpTJP3f96lRFj/GgXWg0UpR4CyJMYNGSaeaAn8+v94eMAZLhZQaZCgwA8NleXmRU+VVBxZOjvFRAm1oLHBrrU8JMbIFiswjesikRBN0GVkfQsNtSz6TpFunb+RFKNBuiNV8n+1wHK3nQVKBb14GTdH6EQ5VWD8OV+S7+cBN5FpYMMGTfq7w/Pj+kj0nq/R6PqWb7ZalpsvNT0tJNf8DTVRPAVv/+iL/AFBLAwQUAAAACAAAAAAAAAAAAAAAAAAAAAAAABMAAAB4bC93b3Jrc2hlZXRzL3NoZWV0Mi54bWyNkMtqwzAQRfd9iqF7M3ahhVCnLgRCKd2mWzUfYGmsgx5GI6fk71NbgSzdJqtBM/fcc2eh+LbuZPcNXgilcxxlYYSBN1J5tS/x5/b16QnDGEhq0kgNJT6Dxet8cpOT67RheGSdO4oeGqpzXBPRJKWUbECT3cqBoZVKGk2Whns5SK8PJE+TVCnqfsgL73snQ6Jy/Kl5o7m2Xg6lq38c7sxu8wV31ikYoYMn/Vzh+f7jJYuz2exxbpObbNOtpsvJT0sxFf8DUUiPAdv4+hL/A1BLAwQUAAAACAAAAAAAAAAAAAAAAAAAAAAAAA4AAAB4bC93b3JrYm9vay54bWyNkMtqwzAQRfd9iqF7Y7dQQqhTFwKllG7TbZUPsKSxLPRApST/fmUrELJ0m9Wgufec0Qzr19iJLxhCGl3hPE0xSKOUHXuFv7aP90sMIZI2pFcGFP4BwrfN+mqNLtwQvIOISiFwjiciosw5R0FqljoaPXe0skGTDFqNdlQ7Gk7Ej0kiyZTv2pxzT71wQqVwfGtkMN7YoIfKrz4Pt26/+wo761WcIKInfS/w/HD/mJblfrl9SKN6tc033qabfx8spON/IAnpOaLG/36JfwFQSwMEFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAZAAAAeGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHOtksFqwzAMhu99iqF74yRjjNGlbTDYpe023QNYUW0HWTKSs+TtZ7eE0V62w44+JP37tNjsTh/B91BIJ0JAtloD8UbiNEXw82t19wBUiuXCC2kI4Akq7K7XKy+laQmhFkEqYyGoHAIxBdZKUy1BsRt0qzmWBaK0pnPcf0tHl/OM0jlRH0h7TfwklVLSh/6U5Nn5GE6ldP1veNdsN59xkFZHCSy4l88fwsPj0+th01jTuTxJ6vm8/eGp5OK/IZvpKeLG/35J/gBQSwECPwAUAAAACAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAbWltZXR5cGVQSwECPwAUAAAACAAAAAAAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAABIAAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1sUEsBAj8AFAAAAAgAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAAAAA9wAAAHhsL3dvcmtzaGVldHMvc2hlZXQyLnhtbFBLAQI/ABQAAAAIAAAAAAAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAKYBAAB4bC93b3JrYm9vay54bWxQSwECPwAUAAAACAAAAAAAAAAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAAA6AgAAeGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHNQSwUGAAAAAAUABQBFAQAA0QIAAAAA",
+      },
+    ],
     upvotes: 1203,
     downvotes: 89,
   },
@@ -198,6 +218,13 @@ export const mockStories: Story[] = [
     industryTags: ["H", "G"],
     country: "US",
     publisherId: "394",
+    files: [
+      {
+        fileName: "maintenance_photo_evidence.png",
+        fileData:
+          "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNk+M9Qz0AEYBxVSF+FAP0QDjWgjxx9AAAAAElFTkSuQmCC",
+      },
+    ],
     upvotes: 1567,
     downvotes: 203,
   },

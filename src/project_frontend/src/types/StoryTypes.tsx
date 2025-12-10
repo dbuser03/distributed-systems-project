@@ -13,6 +13,11 @@ export type EncryptionMetadata = {
   // The key might be shared via off-chain channels or encrypted with the journalist's public key
 };
 
+export type StoryFile = {
+  fileName: string;
+  fileData: string; // base64 encoded
+};
+
 export type Story = {
   // Public fields
   id: string;
@@ -32,6 +37,9 @@ export type Story = {
   country: CountryCode;
 
   publisherId: string;
+
+  // File attachments (optional, can be empty or multiple)
+  files?: StoryFile[];
 
   // Voting
   upvotes: number;
