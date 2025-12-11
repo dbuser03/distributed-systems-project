@@ -37,6 +37,7 @@ function StoryPage() {
           downvotes={story.downvotes}
         />
 
+        <br />
         <StoryAttachments files={story.files ?? []} />
       </article>
 

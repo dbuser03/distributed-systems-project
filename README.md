@@ -15,10 +15,10 @@ WhistleBlower is a blockchain-based platform inspired by WikiLeaks, designed to 
 - 🔒 **Anonymous Publishing**: Journalists can publish articles without revealing their identity
 - 🛡️ **Censorship Resistance**: Content is stored on the blockchain, making it immutable and tamper-proof
 - 📝 **Rich Content Support**: Publish articles with text, images, PDFs, and other attachments
-- 💬 **Community Engagement**: Comment threads and voting system for community discussion
+- 💬 **Community Engagement**: Comment threads and voting system for community discussion (W.I.P)
 - 🏷️ **Tagging & Filtering**: Organize content with tags, filters, and search capabilities
-- ✅ **Verification System**: Role-based system with verifiers and admins to ensure content quality
-- 📊 **Credibility Scoring**: User reputation system based on contributions and verification
+- ✅ **Verification System**: Role-based system with verifiers and admins to ensure content quality (W.I.P)
+- 📊 **Credibility Scoring**: User reputation system based on contributions and verification (W.I.P)
 - 🌐 **Decentralized**: Built on Internet Computer Protocol for true decentralization
 
 ## 🏗️ Architecture
