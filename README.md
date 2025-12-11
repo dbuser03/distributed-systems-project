@@ -21,6 +21,13 @@ WhistleBlower is a blockchain-based platform inspired by WikiLeaks, designed to 
 - 📊 **Credibility Scoring**: User reputation system based on contributions and verification (W.I.P)
 - 🌐 **Decentralized**: Built on Internet Computer Protocol for true decentralization
 
+### Missing Features
+
+- 🗑️ **Deleting Own Data**: Allow users to delete their personal data and published stories
+- 🕵️ **Verification Page**: Dedicated page for reviewers to verify and approve submitted content
+- 🔎 **Additional Filtering**: Enhanced filtering options, including sorting and showing only verified stories
+- 👍 **Comment Rating System**: Vote (like/dislike) on comments to surface helpful discussion
+
 ## 🏗️ Architecture
 
 ### Tech Stack
