@@ -45,11 +45,13 @@ module {
             isBanned = false;
             createdAt = Time.now();
             threads = [];
-            comments =[];
+            comments = [];
             likedThreads = [];
             dislikedThreads = [];
             dislikedComments = [];
             likedComments = [];
+            allLikes = 0;
+            allDislikes = 0;
         };
 
         users.put(dummyPrincipal, dummyUser);
@@ -63,7 +65,7 @@ module {
         commentsStore : HashMap.HashMap<CommentId, Comment>,
         scoreIndexHash : HashMap.HashMap<ThreadId, Int>,
         tagIndex : HashMap.HashMap<Text, [ThreadId]>,
-    ) : async {#status : Int} {
+    ) : async { #status : Int } {
 
         let userRes = await seedDemoData(users);
 
@@ -95,7 +97,6 @@ module {
                     threadsStore.put(tid, thread);
                     ReverseIndexes.updateScoreOfThread(scoreIndexHash, seed.likes - seed.dislikes, tid);
                     ReverseIndexes.indexThreadTags(tagIndex, seed.tags, tid);
-
 
                     for (cText in seed.comments.vals()) {
                         let input : CommentInput = {
