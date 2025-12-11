@@ -14,7 +14,7 @@ function StoryLink({ story }: { story: Story }) {
           initialDownvotes={story.downvotes}
         />
       </div>
-      <div className="card-body pb-2">
+      <div className="card-body">
         <h2 className="card-title text-primary">{story.title}</h2>
         <p className="text-base-content/70 line-clamp-3">{story.preview}</p>
 
