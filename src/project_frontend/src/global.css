@@ -2,8 +2,3 @@
 @plugin "daisyui" {
   themes: corporate;
 }
-
-html,
-body {
-  overscroll-behavior: none;
-}

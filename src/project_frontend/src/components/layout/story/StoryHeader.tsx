@@ -1,7 +1,6 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeftIcon } from "../../icons/CommonIcons";
-import { ISICSections, Countries } from "../../../data";
+import { Link } from "react-router-dom";
+import { ISICSections } from "../../../data";
 import { Story, ISICSectionKey } from "../../../types";
 import { CalendarIcon } from "../../icons";
 
@@ -10,22 +9,9 @@ interface StoryHeaderProps {
 }
 
 function StoryHeader({ story }: StoryHeaderProps) {
-  const navigate = useNavigate();
   return (
     <header className="mb-8">
-      {/* Back icon for mobile/dock screens */}
-      <div className="lg:hidden mb-8 flex items-center">
-        <button
-          onClick={() => navigate(-1)}
-          aria-label="Back"
-          type="button"
-          className="p-0 m-0 bg-transparent border-none outline-none inline-flex items-center justify-center"
-          style={{ boxShadow: "none" }}
-        >
-          <ArrowLeftIcon className="w-6 h-6" />
-        </button>
-      </div>
-      <h1 className="text-4xl font-bold mb-6">{story.title}</h1>
+      <h1 className="text-4xl font-bold mb-4">{story.title}</h1>
       <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-base-300">
         <Link
           to={`/user/${story.publisherId}`}
@@ -38,12 +24,6 @@ function StoryHeader({ story }: StoryHeaderProps) {
           <div className="badge badge-ghost">
             <CalendarIcon className="w-4 h-4 mr-1" />
             {new Date(Number(story.publishedAt)).toLocaleDateString()}
-          </div>
-        )}
-
-        {story.country && (
-          <div className="badge badge-accent">
-            {Countries[story.country] || story.country}
           </div>
         )}
 

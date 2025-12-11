@@ -14,18 +14,14 @@ function StoryVoteSection({
 }: StoryVoteSectionProps) {
   return (
     <div className="flex justify-center mt-8 pt-6 border-t border-base-300">
-      <div className="flex items-center gap-4 md:gap-4">
-        <span className="text-base-content/70 text-sm md:text-base">
-          Was this story helpful?
-        </span>
-        <div className="md:scale-100 scale-90">
-          <VoteButtons
-            storyId={storyId}
-            initialUpvotes={upvotes}
-            initialDownvotes={downvotes}
-            variant="compact"
-          />
-        </div>
+      <div className="flex items-center gap-4">
+        <span className="text-base-content/70">Was this story helpful?</span>
+        <VoteButtons
+          storyId={storyId}
+          initialUpvotes={upvotes}
+          initialDownvotes={downvotes}
+          variant="compact"
+        />
       </div>
     </div>
   );
