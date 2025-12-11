@@ -21,61 +21,69 @@ export function useUserProfile(userId: string | undefined): UserProfile | null {
       return;
     }
 
-    const fetchUserThreads = async () => {
+    const fetchUserProfile = async () => {
       try {
         const principal = Principal.fromText(userId);
 
-        const result = await actor.getUserThreads(principal);
-        
-        if ('list' in result) {
-          const backendThreads = result.list;
-          
-          const threadsCreated = backendThreads.map(adaptThreadToStory);
-
-          const userCommentsResult = await actor.getUserComments(principal);
-          const threadIdsRaw = userCommentsResult.ok;
-
-          //console.log("User comments result:", userCommentsResult);
-
-          let contributions: Story[] = [];
-
-          if ('ok' in userCommentsResult) {
-            const comments = userCommentsResult.ok;
-
-            if (comments.length > 0) {
-
-              const extractedIds = comments.map((c: any) => c.threadId);
-              const uniqueThreadIds = [...new Set(extractedIds)];
-
-              //console.log("Unique thread IDs from comments:", uniqueThreadIds);
-
-              const threadsFromComments = await actor.getThreads(uniqueThreadIds);
-
-              //console.log("Threads fetched from comments:", threadsFromComments);
-              
-              contributions = threadsFromComments.map(adaptThreadToStory);
-            }
+        let credibilityScore = 0;
+        let userAlias = "";
+        try {
+          const profileResult = await actor.getUserProfile(principal);
+          if ("ok" in profileResult) {
+            credibilityScore = Number(profileResult.ok.credibilityScore);
+            userAlias = profileResult.ok.alias;
           }
-
-          setProfile({
-            userId,
-            threadsCreated,
-            contributions,
-            credibilityScore: userProfile?.credibilityScore ?? 0, 
-          });
-        } else {
-          console.error("Error retrieving threads:", result.err);
-          setProfile(null);
+        } catch (error) {
+          console.warn("Could not fetch user profile:", error);
         }
 
+        // Try to fetch threads and comments (may require authentication)
+        let threadsCreated: Story[] = [];
+        let contributions: Story[] = [];
+
+        try {
+          const result = await actor.getUserThreads(principal);
+
+          if ("list" in result) {
+            const backendThreads = result.list;
+            threadsCreated = backendThreads.map(adaptThreadToStory);
+
+            const userCommentsResult = await actor.getUserComments(principal);
+
+            if ("ok" in userCommentsResult) {
+              const comments = userCommentsResult.ok;
+
+              if (comments.length > 0) {
+                const extractedIds = comments.map((c: any) => c.threadId);
+                const uniqueThreadIds = [...new Set(extractedIds)];
+
+                const threadsFromComments = await actor.getThreads(
+                  uniqueThreadIds
+                );
+                contributions = threadsFromComments.map(adaptThreadToStory);
+              }
+            }
+          }
+        } catch (error) {
+          console.warn(
+            "Could not fetch user threads (authentication may be required):",
+            error
+          );
+        }
+
+        setProfile({
+          userId,
+          threadsCreated,
+          contributions,
+          credibilityScore: userProfile?.credibilityScore ?? 0,
+        });
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching user profile:", error);
         setProfile(null);
       }
     };
 
-    fetchUserThreads();
-
+    fetchUserProfile();
   }, [userId, actor, userProfile]);
 
   return profile;

@@ -4,9 +4,11 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 
 function Sidebar() {
-  const { isAuthenticated, login, logout } = useAuth() as any;
-  // useLocation automatically tracks current route and updates on navigation/resize
+  const { isAuthenticated, login, logout, userProfile } = useAuth() as any;
   const location = useLocation();
+
+  const userId = userProfile?.principal.toText();
+  const profileLink = userId ? `/user/${userId}` : "/user/me";
 
   return (
     <>
@@ -60,7 +62,7 @@ function Sidebar() {
 
             {/* Profile */}
             <li>
-              <Link to="/user/1">
+              <Link to="/user/me">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -196,9 +198,9 @@ function Sidebar() {
 
           {/* Profile Mobile */}
           <Link
-            to="/user/1"
+            to={"/user/me"}
             className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors group ${
-              location.pathname === "/user/1"
+              location.pathname === profileLink
                 ? "bg-primary/10 text-primary"
                 : "hover:bg-base-300"
             }`}
@@ -218,7 +220,7 @@ function Sidebar() {
             </svg>
             <span
               className={`text-xs transition-opacity ${
-                location.pathname === "/user/1"
+                location.pathname === profileLink
                   ? "opacity-100 font-medium"
                   : "opacity-70 group-hover:opacity-100"
               }`}
