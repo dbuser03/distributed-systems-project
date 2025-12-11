@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
+import { Principal } from "@dfinity/principal";
+import { useAuth } from "../context/authContext";
 import { Story } from "../types";
-import { mockStories } from "../data";
+import { adaptThreadToStory } from "../adapters/storyAdapter";
 
 export interface UserProfile {
   userId: string;
@@ -9,28 +11,72 @@ export interface UserProfile {
   credibilityScore: number;
 }
 
-const calculateCredibilityScore = (threadCount: number): number => {
-  return Math.min(100, Math.max(0, threadCount * 15 + 20));
-};
-
 export function useUserProfile(userId: string | undefined): UserProfile | null {
-  return useMemo(() => {
-    if (!userId) return null;
+  const { actor, userProfile } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-    const threadsCreated = mockStories.filter(
-      (story) => story.publisherId === userId
-    );
+  useEffect(() => {
+    if (!userId || !actor) {
+      setProfile(null);
+      return;
+    }
 
-    // TODO: Implement actual contributions logic
-    const contributions: Story[] = [];
+    const fetchUserThreads = async () => {
+      try {
+        const principal = Principal.fromText(userId);
 
-    const credibilityScore = calculateCredibilityScore(threadsCreated.length);
+        const result = await actor.getUserThreads(principal);
+        
+        if ('list' in result) {
+          const backendThreads = result.list;
+          
+          const threadsCreated = backendThreads.map(adaptThreadToStory);
 
-    return {
-      userId,
-      threadsCreated,
-      contributions,
-      credibilityScore,
+          const userCommentsResult = await actor.getUserComments(principal);
+          const threadIdsRaw = userCommentsResult.ok;
+
+          //console.log("User comments result:", userCommentsResult);
+
+          let contributions: Story[] = [];
+
+          if ('ok' in userCommentsResult) {
+            const comments = userCommentsResult.ok;
+
+            if (comments.length > 0) {
+
+              const extractedIds = comments.map((c: any) => c.threadId);
+              const uniqueThreadIds = [...new Set(extractedIds)];
+
+              //console.log("Unique thread IDs from comments:", uniqueThreadIds);
+
+              const threadsFromComments = await actor.getThreads(uniqueThreadIds);
+
+              //console.log("Threads fetched from comments:", threadsFromComments);
+              
+              contributions = threadsFromComments.map(adaptThreadToStory);
+            }
+          }
+
+          setProfile({
+            userId,
+            threadsCreated,
+            contributions,
+            credibilityScore: userProfile?.credibilityScore ?? 0, 
+          });
+        } else {
+          console.error("Error retrieving threads:", result.err);
+          setProfile(null);
+        }
+
+      } catch (error) {
+        console.error("Error:", error);
+        setProfile(null);
+      }
     };
-  }, [userId]);
+
+    fetchUserThreads();
+
+  }, [userId, actor, userProfile]);
+
+  return profile;
 }
