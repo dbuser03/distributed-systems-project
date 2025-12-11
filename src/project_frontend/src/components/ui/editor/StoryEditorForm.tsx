@@ -70,6 +70,8 @@ export function StoryEditorForm({
         <div className="flex-1">
           <CountryInput
             countries={formData.countries || []}
+            inputValue={formData.countryInput || ""}
+            onInputChange={(value) => onUpdateField("countryInput", value)}
             onAddCountry={(country) =>
               onUpdateField("countries", [
                 ...(formData.countries || []),

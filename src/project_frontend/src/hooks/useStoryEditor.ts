@@ -15,6 +15,7 @@ export interface StoryFormData {
   content: string;
   industryTags: ISICSectionKey[];
   industryTagInput: string;
+  countryInput: string;
   file?: File | null;
   countries?: CountryCode[];
 }
@@ -25,6 +26,7 @@ const initialFormData: StoryFormData = {
   content: "",
   industryTags: [],
   industryTagInput: "",
+  countryInput: "",
   file: null,
   countries: [],
 };
@@ -50,6 +52,8 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       content: story.content,
       industryTags: story.industryTags,
       industryTagInput: "",
+      countryInput: "",
+      countries: [story.country],
     });
   }, [storyId]);
 
@@ -123,6 +127,7 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
           abstract: formData.preview,
           body: formData.content,
           tags: formData.industryTags,
+          countries: formData.countries || [],
           file: fileBlobs ? [fileBlobs] : [],
           fileType: fileTypes ? [fileTypes] : [],
         };

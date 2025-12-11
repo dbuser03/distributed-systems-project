@@ -2,16 +2,20 @@ import React from "react";
 import { CountryCode } from "../../../types";
 import { Countries } from "../../../data";
 import FilterDropdown from "../filters/FilterDropdown";
-import { FilterIcon, GlobeIcon } from "../../icons/FilterIcons";
+import { GlobeIcon } from "../../icons/FilterIcons";
 
 interface CountryInputProps {
   countries: CountryCode[];
+  inputValue: string;
+  onInputChange: (value: string) => void;
   onAddCountry: (country: CountryCode) => void;
   onRemoveCountry: (country: CountryCode) => void;
 }
 
 export function CountryInput({
-  countries,
+  countries = [],
+  inputValue,
+  onInputChange,
   onAddCountry,
   onRemoveCountry,
 }: CountryInputProps) {
