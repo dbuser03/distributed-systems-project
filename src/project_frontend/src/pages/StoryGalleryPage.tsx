@@ -66,6 +66,26 @@ function StoryGalleryPage() {
     );
   }
 
+  // Pagination state
+  const PAGE_SIZE = 5;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredStories.length / PAGE_SIZE));
+  const pagedStories = filteredStories.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  // Reset to page 1 when filters/search change
+  React.useEffect(() => {
+    setPage(1);
+  }, [
+    filters.search,
+    filters.selectedTags,
+    filters.selectedCountries,
+    filters.dateRange,
+    filters.verifiedOnly,
+  ]);
+
   const showEmptyState = filteredStories.length === 0 && hasActiveFilters;
 
   return (
@@ -107,13 +127,36 @@ function StoryGalleryPage() {
               }
             />
           ) : (
-            filteredStories.map((story) => (
+            pagedStories.map((story) => (
               <Link key={story.id} to={`/story/${story.id}`}>
                 <StoryLink story={story} />
               </Link>
             ))
           )}
         </section>
+
+        {/* Pagination Controls */}
+        {filteredStories.length > PAGE_SIZE && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              className="btn btn-sm"
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Prev
+            </button>
+            <span className="mx-2">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              className="btn btn-sm"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

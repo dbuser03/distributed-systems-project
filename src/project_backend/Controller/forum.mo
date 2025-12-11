@@ -13,6 +13,7 @@ import Demo "../Utils/load_demo";
 import Utils "../Utils/utils";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
+import UserLogic "../Services/user_logic";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -24,7 +25,7 @@ persistent actor Forum {
   public type Comment = Types.Comment;
   public type CommentInput = Types.CommentInput;
   public type HydratedThread = Types.HydratedThread;
-  public type FeedbackInput = Types.FeedbackInput;
+  public type VoteType = Types.VoteType;
 
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
   // start for the storage of blobs
@@ -84,6 +85,7 @@ persistent actor Forum {
     ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
     ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
     isScoreIndexSorted := false;
+    await UserLogic.addUserThread(users, caller, id);
     #id(id);
   };
 
@@ -91,10 +93,20 @@ persistent actor Forum {
     #ok : CommentId;
     #err : Int;
   } {
-    if (not Utils.isValidUser(msg.caller, users)) {
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
       return #err(401);
     };
-    await DocumentStore.createComment(threadsStore, commentsStore, msg.caller, input);
+    let res = await DocumentStore.createComment(threadsStore, commentsStore, caller, input);
+    switch (res) {
+      case (#err(e)) {
+        return #err(e);
+      };
+      case (#ok(id)) {
+        await UserLogic.addUserComment(users, caller, id);
+        return #ok(id);
+      };
+    };
   };
 
   // single thread with only references to comments
@@ -121,14 +133,14 @@ persistent actor Forum {
   };
 
   public shared (msg) func addFeedbackThread(
-    input : FeedbackInput,
+    input : VoteType,
     threadId : ThreadId,
   ) : async { #status : Int } {
     let caller = msg.caller;
     if (not Utils.isValidUser(caller, users)) {
       return #status(401);
     };
-    let res = await DocumentStore.addFeedbackThread(threadsStore, caller, input, threadId);
+    let res = await DocumentStore.addFeedbackThread(threadsStore, users, caller, input, threadId);
     switch (res) {
       case (#status(code)) {
         #status(code);
@@ -136,20 +148,47 @@ persistent actor Forum {
       case (#newScore(val)) {
         ReverseIndexes.updateScoreOfThread(scoreIndexHash, val, threadId);
         isScoreIndexSorted := false;
+        switch (input) {
+          case (#like) {
+            await UserLogic.addLikedThread(users, caller, threadId);
+          };
+          case (#dislike) {
+            await UserLogic.addDislikedThread(users, caller, threadId);
+          };
+          case (#none) {};
+        };
+
         #status(200);
       };
     };
   };
 
   public shared (msg) func addFeedbackComment(
-    input : FeedbackInput,
+    input : VoteType,
     commentId : CommentId,
-  ) : async (status : Int) {
+  ) : async { #status : Int } {
     let caller = msg.caller;
     if (not Utils.isValidUser(caller, users)) {
-      return 401;
+      return #status(401);
     };
-    await DocumentStore.addFeedbackComment(commentsStore, caller, input, commentId);
+    let res = await DocumentStore.addFeedbackComment(commentsStore, users, caller, input, commentId);
+    switch (res) {
+      case (404) {
+        #status(404);
+      };
+      case (200) {
+        switch (input) {
+          case (#like) {
+            await UserLogic.addLikedComment(users, caller, commentId);
+          };
+          case (#dislike) {
+            await UserLogic.addDislikedComment(users, caller, commentId);
+          };
+          case (#none) {};
+        };
+        #status(200);
+      };
+    };
   };
 
   public shared func getThreadsByTags(tags : [Text]) : async {
@@ -214,17 +253,17 @@ persistent actor Forum {
 
   public shared (msg) func deleteThread(
     id : ThreadId
-  ) : async (status : Int) {
+  ) : async { #status : Int } {
     if (not Utils.isValidUser(msg.caller, users)) {
-      return 401;
+      return #status(401);
     };
     switch (threadsStore.get(id)) {
       case (null) {
-        return 404;
+        return #status(404);
       };
       case (?thread) {
         if (thread.author != msg.caller) {
-          return 401;
+          return #status(401);
         };
         switch (thread.file) {
           case (null) {};
@@ -239,7 +278,7 @@ persistent actor Forum {
           };
         };
         ignore threadsStore.remove(id);
-        return 204;
+        return #status(204);
       };
     };
   };
@@ -260,6 +299,97 @@ persistent actor Forum {
   };
 
   //-------------------------------- User specific functions --------------------------------
+
+  // Method to get all threads created by a user
+  public shared (msg) func getUserThreads(userId : Principal) : async {
+    #list : [Thread];
+    #err : Int;
+  } {
+    if (not Utils.isValidUser(msg.caller, users)) {
+      return #err(401);
+    };
+    // Fetch the user to ensure they exist and are not banned
+    let userResult = users.get(userId);
+    switch (userResult) {
+      case (null) {
+        return #err(500) // If user doesn't exist or is banned, return empty list
+      };
+      case (?user) {
+        // Get the list of thread IDs from the user's data
+        let threadIds = user.threads;
+        if (threadIds == []) {
+          return #list([]) // If no threads, return empty list
+        };
+
+        // Fetch the threads using the existing `getThreads` function
+        let threads = await DocumentStore.getThreads(threadsStore, threadIds);
+        return #list(threads); // Return the list of threads created by the user
+      };
+    };
+  };
+
+  public shared (msg) func getUserFeedbackOnThreads(
+    userId : Principal,
+    threadIds : [ThreadId],
+  ) : async { #feedback : [(ThreadId, VoteType)]; #err : Int } {
+
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
+      return #err(401);
+    };
+
+    var results : [(ThreadId, VoteType)] = [];
+
+    for (threadId in threadIds.vals()) {
+      let vote = await UserLogic.hasUserLikedOrDislikedThread(users, userId, threadId);
+      results := Array.append(results, [(threadId, vote)]);
+    };
+
+    return #feedback(results);
+  };
+
+  public shared (msg) func getUserFeedbackOnComments(
+    userId : Principal,
+    commentIds : [CommentId],
+  ) : async { #feedback : [(CommentId, VoteType)]; #err : Int } {
+
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
+      return #err(401);
+    };
+
+    var results : [(CommentId, VoteType)] = [];
+
+    for (commentId in commentIds.vals()) {
+      let vote = await UserLogic.hasUserLikedOrDislikedComment(users, userId, commentId);
+      results := Array.append(results, [(commentId, vote)]);
+    };
+
+    return #feedback(results);
+  };
+
+  // Method to check if a user liked or disliked a specific post (ThreadId)
+  public shared (msg) func hasUserLikedOrDislikedThread(userId : Principal, postId : ThreadId) : async {
+    #feedback : VoteType;
+    #err : Int;
+  } {
+    if (not Utils.isValidUser(msg.caller, users)) {
+      return #err(401);
+    };
+    let res = await UserLogic.hasUserLikedOrDislikedThread(users, userId, postId);
+    return #feedback(res);
+  };
+
+  public shared (msg) func hasUserLikedOrDislikedComment(userId : Principal, commentId : CommentId) : async {
+    #feedback : VoteType;
+    #err : Int;
+  } {
+    if (not Utils.isValidUser(msg.caller, users)) {
+      return #err(401);
+    };
+    let res = await UserLogic.hasUserLikedOrDislikedComment(users, userId, commentId);
+    return #feedback(res);
+  };
 
   //update user alias
   public shared (msg) func updateAlias(newAlias : Text) : async {
@@ -285,6 +415,12 @@ persistent actor Forum {
           credibilityScore = existingUser.credibilityScore;
           isBanned = existingUser.isBanned;
           createdAt = existingUser.createdAt;
+          threads = existingUser.threads;
+          comments = existingUser.comments;
+          likedThreads = existingUser.likedThreads;
+          dislikedThreads = existingUser.dislikedThreads;
+          dislikedComments = existingUser.dislikedComments;
+          likedComments = existingUser.likedComments;
         };
 
         users.put(caller, updatedUser);
@@ -338,6 +474,13 @@ persistent actor Forum {
           createdAt = u.createdAt;
           credibilityScore = u.credibilityScore;
           isBanned = u.isBanned;
+          threads = u.threads;
+          comments = u.comments;
+          likedThreads = u.likedThreads;
+          dislikedThreads = u.dislikedThreads;
+          dislikedComments = u.dislikedComments;
+          likedComments = u.likedComments;
+
         };
         users.put(targetUser, updatedUser);
         return #ok;
@@ -363,6 +506,12 @@ persistent actor Forum {
       credibilityScore = 0;
       isBanned = false;
       createdAt = 0;
+      threads = [];
+      comments = [];
+      likedThreads = [];
+      dislikedThreads = [];
+      dislikedComments = [];
+      likedComments = [];
     };
 
     switch (users.get(p)) {
@@ -378,6 +527,12 @@ persistent actor Forum {
           credibilityScore = 10;
           isBanned = false;
           createdAt = Time.now();
+          threads = [];
+          comments = [];
+          likedThreads = [];
+          dislikedThreads = [];
+          dislikedComments = [];
+          likedComments = [];
         };
         users.put(p, newUser);
         user := newUser;
@@ -390,8 +545,43 @@ persistent actor Forum {
     return #ok(user);
   };
 
+  // getLikedThreads
+  public shared (msg) func getLikedThreads(
+    userId : Principal
+  ) : async { #ok : [ThreadId]; #err : Int } {
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
+      return #err(401);
+    };
+    let res = await UserLogic.getLikedThreads(users, userId);
+    return #ok(res);
+  };
+
+  // getDislikedThreads
+  public shared (msg) func getDislikedThreads(
+    userId : Principal
+  ) : async { #ok : [ThreadId]; #err : Int } {
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
+      return #err(401);
+    };
+    let res = await UserLogic.getDislikedThreads(users, userId);
+    return #ok(res);
+  };
+
+  public shared (msg) func getUserComments(
+    userId : Principal
+  ) : async { #ok : [CommentId]; #err : Int } {
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
+      return #err(401);
+    };
+    let res = await UserLogic.getUserComments(users, userId);
+    return #ok(res);
+  };
+
   // ----------- Demo Call ---------------
-  public shared func createDemo() : async (status : Int) {
+  public shared func createDemo() : async {#status : Int} {
     isScoreIndexSorted := false;
     await Demo.seedAllDemoData(users, threadsStore, commentsStore, scoreIndexHash, tagIndex);
 

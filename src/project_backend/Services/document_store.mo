@@ -12,6 +12,7 @@ import Region "mo:base/Region";
 import Blob "mo:base/Blob";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
+import UserLogic "user_logic";
 
 module {
   public type Thread = Types.Thread;
@@ -21,8 +22,8 @@ module {
   public type ThreadId = Types.ThreadId;
   public type CommentId = Types.CommentId;
   public type HydratedThread = Types.HydratedThread;
-  public type FeedbackInput = Types.FeedbackInput;
   public type BlobRef = Types.BlobRef;
+  public type VoteType = Types.VoteType;
 
   public func createThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
@@ -252,8 +253,9 @@ module {
 
   public func addFeedbackThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
+    users : HashMap.HashMap<Principal, Types.User>,
     caller : Principal,
-    input : FeedbackInput,
+    voteType : VoteType,
     threadId : ThreadId,
   ) : async { #status : Int; #newScore : Int } {
     switch (threadsStore.get(threadId)) {
@@ -261,11 +263,18 @@ module {
         #status(404);
       };
       case (?thread) {
-        let alreadyLiked : Bool = false;
-        let alreadyDisliked : Bool = false;
+        let interaction = await UserLogic.hasUserLikedOrDislikedThread(users, caller, threadId);
+        let alreadyLiked = switch (interaction) {
+          case (#like) true;
+          case (_) false;
+        };
+        let alreadyDisliked = switch (interaction) {
+          case (#dislike) true;
+          case (_) false;
+        };
 
         let result = Utils.applyVote(
-          input.voteType,
+          voteType,
           thread.likes,
           thread.dislikes,
           alreadyLiked,
@@ -299,8 +308,9 @@ module {
 
   public func addFeedbackComment(
     commentsStore : HashMap.HashMap<CommentId, Comment>,
+    users : HashMap.HashMap<Principal, Types.User>,
     caller : Principal,
-    input : FeedbackInput,
+    voteType : VoteType,
     commentId : CommentId,
   ) : async (status : Int) {
     switch (commentsStore.get(commentId)) {
@@ -308,11 +318,18 @@ module {
         404;
       };
       case (?comment) {
-        let alreadyLiked : Bool = false;
-        let alreadyDisliked : Bool = false;
+        let interaction = await UserLogic.hasUserLikedOrDislikedComment(users, caller, commentId);
+        let alreadyLiked = switch (interaction) {
+          case (#like) true;
+          case (_) false;
+        };
+        let alreadyDisliked = switch (interaction) {
+          case (#dislike) true;
+          case (_) false;
+        };
 
         let result = Utils.applyVote(
-          input.voteType,
+          voteType,
           comment.likes,
           comment.dislikes,
           alreadyLiked,

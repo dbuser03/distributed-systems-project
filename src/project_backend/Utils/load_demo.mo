@@ -17,7 +17,6 @@ module {
     public type ThreadId = Types.ThreadId;
     public type CommentId = Types.CommentId;
     public type HydratedThread = Types.HydratedThread;
-    public type FeedbackInput = Types.FeedbackInput;
     public type BlobRef = Types.BlobRef;
     public type User = Types.User;
 
@@ -45,6 +44,12 @@ module {
             credibilityScore = 0;
             isBanned = false;
             createdAt = Time.now();
+            threads = [];
+            comments =[];
+            likedThreads = [];
+            dislikedThreads = [];
+            dislikedComments = [];
+            likedComments = [];
         };
 
         users.put(dummyPrincipal, dummyUser);
@@ -58,13 +63,13 @@ module {
         commentsStore : HashMap.HashMap<CommentId, Comment>,
         scoreIndexHash : HashMap.HashMap<ThreadId, Int>,
         tagIndex : HashMap.HashMap<Text, [ThreadId]>,
-    ) : async (status : Int) {
+    ) : async {#status : Int} {
 
         let userRes = await seedDemoData(users);
 
         switch (userRes) {
             case (#err msg) {
-                return 500;
+                return #status(500);
             };
             case (#ok dummyPrincipal) {
                 let now = Time.now();
@@ -108,7 +113,7 @@ module {
                     };
                 };
 
-                return 200;
+                return #status(200);
             };
         };
     };

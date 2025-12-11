@@ -9,7 +9,7 @@ function StoryContent({ content }: StoryContentProps) {
     <div className="prose max-w-none">
       <div className="card bg-base-100">
         <div className="card-body p-0">
-          <p className="text-base-content leading-relaxed text-lg whitespace-pre-line">
+          <p className="text-base-content text-base md:text-lg whitespace-pre-line">
             {content}
           </p>
         </div>

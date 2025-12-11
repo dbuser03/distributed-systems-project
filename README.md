@@ -1,83 +1,222 @@
-# `project`
+# WhistleBlower
 
-Welcome to your new `project` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+> A decentralized, censorship-resistant platform for journalists to share information anonymously with the public by publishing articles on the blockchain.
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+[![Internet Computer](https://img.shields.io/badge/Built%20on-Internet%20Computer-blue)](https://internetcomputer.org/)
+[![Motoko](https://img.shields.io/badge/Backend-Motoko-orange)](https://internetcomputer.org/docs/current/motoko/main/motoko)
+[![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-blue)](https://react.dev/)
 
-To learn more before you start working with `project`, see the following documentation available online:
+## 📖 Overview
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Motoko Programming Language Guide](https://internetcomputer.org/docs/current/motoko/main/motoko)
-- [Motoko Language Quick Reference](https://internetcomputer.org/docs/current/motoko/main/language-manual)
+WhistleBlower is a blockchain-based platform inspired by WikiLeaks, designed to empower journalists and whistleblowers to share sensitive information with the public anonymously and without the risk of government censorship. By leveraging the immutable nature of blockchain technology, articles published on WhistleBlower cannot be altered or removed, ensuring transparency and preserving the integrity of investigative journalism.
 
-If you want to start working on your project right away, you might want to try the following commands:
+### Key Features
 
-```bash
-cd project/
-dfx help
-dfx canister --help
+- 🔒 **Anonymous Publishing**: Journalists can publish articles without revealing their identity
+- 🛡️ **Censorship Resistance**: Content is stored on the blockchain, making it immutable and tamper-proof
+- 📝 **Rich Content Support**: Publish articles with text, images, PDFs, and other attachments
+- 💬 **Community Engagement**: Comment threads and voting system for community discussion
+- 🏷️ **Tagging & Filtering**: Organize content with tags, filters, and search capabilities
+- ✅ **Verification System**: Role-based system with verifiers and admins to ensure content quality
+- 📊 **Credibility Scoring**: User reputation system based on contributions and verification
+- 🌐 **Decentralized**: Built on Internet Computer Protocol for true decentralization
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+**Backend:**
+
+- [Motoko](https://internetcomputer.org/docs/current/motoko/main/motoko) - Smart contract language for Internet Computer
+- [Internet Computer Protocol](https://internetcomputer.org/) - Decentralized blockchain platform
+- [Candid](https://internetcomputer.org/docs/current/developer-docs/backend/candid/) - Interface description language
+
+**Frontend:**
+
+- [React](https://react.dev/) - UI framework
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
+- [Vite](https://vitejs.dev/) - Build tool and dev server
+- [TailwindCSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/) - Styling framework
+- [React Router](https://reactrouter.com/) - Client-side routing
+
+**Authentication:**
+
+- [Internet Identity](https://internetcomputer.org/docs/current/developer-docs/integrations/internet-identity/overview) - Decentralized identity solution
+
+### Project Structure
+
+```
+distributed-systems-project/
+├── src/
+│   ├── project_backend/          # Motoko backend canister
+│   │   ├── Controller/           # Main forum controller
+│   │   ├── Model/                # Data types and models
+│   │   ├── Services/             # Document store and indexing services
+│   │   └── Utils/                # Utility functions and demo data
+│   └── project_frontend/         # React frontend application
+│       └── src/
+│           ├── components/       # React components
+│           ├── pages/            # Page components
+│           ├── hooks/            # Custom React hooks
+│           ├── context/         # React context providers
+│           └── types/           # TypeScript type definitions
+├── dfx.json                      # DFX configuration
+├── mops.toml                     # Motoko package manager config
+└── package.json                  # Node.js dependencies
 ```
 
-## Running the project locally
+## 📋 Requirements
 
-If you want to test your project locally, you can use the following commands:
+- **Node.js**: 20 LTS or above
+- **npm**: 7.0.0 or above
+- **DFX**: Internet Computer SDK (will be installed in setup)
+- **ic-mops**: Motoko package manager
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have Node.js 20 LTS or above installed on your system.
+
+### Installation
+
+1. **Install Internet Computer SDK (DFX)**
+
+   ```bash
+   sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+   ```
+
+   For more details, see the [DFX Quick Start Guide](https://internetcomputer.org/docs/building-apps/getting-started/quickstart).
+
+2. **Install Motoko Package Manager**
+
+   ```bash
+   npm install -g ic-mops
+   ```
+
+3. **Install Node.js Dependencies**
+
+   ```bash
+   npm install
+   ```
+
+4. **Install Motoko Dependencies**
+
+   ```bash
+   mops install
+   ```
+
+## 🏃 Running the Project Locally
+
+### Start the Local Replica
+
+Start the Internet Computer replica in the background:
 
 ```bash
-# Starts the replica, running in the background
 dfx start --background
+```
 
-# Deploys your canisters to the replica and generates your candid interface
+### Deploy Canisters
+
+Deploy all canisters (backend and frontend) to the local replica:
+
+```bash
 dfx deploy
 ```
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+This command will:
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+- Compile the Motoko backend canister
+- Build the React frontend
+- Deploy both canisters to the local replica
+- Generate Candid interface files
 
-```bash
-npm run generate
+Once deployment completes, your application will be available at:
+
+```
+http://localhost:4943?canisterId={asset_canister_id}
 ```
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+> **Note**: Replace `{asset_canister_id}` with the actual canister ID displayed after deployment.
 
-If you are making frontend changes, you can start a development server with
+### Development Workflow
+
+**Backend Changes:**
+
+If you modify the backend canister, regenerate the Candid interface:
+
+```bash
+npm run build
+```
+
+This is automatically run when you execute `dfx deploy`, but you can run it manually if needed.
+
+**Frontend Development:**
+
+For frontend development with hot-reload, start the Vite dev server:
 
 ```bash
 npm start
 ```
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+This starts a development server at `http://localhost:3000` that proxies API requests to the replica at port 4943.
 
-### Note on frontend environment variables
+## 📚 Additional Resources
 
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
+To learn more about the technologies used in this project:
 
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
+- [Internet Computer Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
+- [DFX SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
+- [Motoko Programming Language Guide](https://internetcomputer.org/docs/current/motoko/main/motoko)
+- [Motoko Language Quick Reference](https://internetcomputer.org/docs/current/motoko/main/language-manual)
+- [Internet Identity Documentation](https://internetcomputer.org/docs/current/developer-docs/integrations/internet-identity/overview)
 
-### Note on Auth dependencies
-You are probably gonna need to:
+## 🔧 Configuration
 
-```bash
-npm i 
+### Frontend Environment Variables
+
+If you're hosting the frontend code without using DFX, you may need to configure environment variables to ensure your project doesn't fetch the root key in production:
+
+**Option 1:** Set `DFX_NETWORK` to `ic` if using Webpack
+
+**Option 2:** Configure `dfx.json` to override environment variables:
+
+```json
+{
+  "canisters": {
+    "{asset_canister_id}": {
+      "declarations": {
+        "env_override": "ic"
+      }
+    }
+  }
+}
 ```
-on both the global project then the frontend.
 
-Then you gonna need to:
+**Option 3:** Write your own `createActor` constructor that doesn't fetch the root key
 
-```bash
-npm i -g ic-mops
-mops init -y
-```
+## 🔐 Security Considerations
 
-Finally, just start the project with:
+- **Anonymous Publishing**: Users authenticate via Internet Identity, which provides privacy-preserving authentication
+- **Immutable Storage**: Once published, content cannot be altered or deleted due to blockchain immutability
+- **Role-Based Access**: The platform implements a role system (User, Verifier, Admin) for content moderation
+- **Credibility System**: User reputation scores help maintain content quality
 
-```bash
-dfx start --background
-dfx deploy
-```
+## 🤝 Contributing
 
-Do not restart dfx using '--clean' flag.
+Contributions are welcome! When working with this project in your development environment, your changes will not affect any production deployment or identity tokens.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+MIT License
+
+## 🙏 Acknowledgments
+
+- Built on [Internet Computer Protocol](https://internetcomputer.org/)
+- Inspired by platforms like WikiLeaks and other whistleblowing initiatives
