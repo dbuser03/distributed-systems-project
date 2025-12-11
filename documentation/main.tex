@@ -13,23 +13,95 @@
 \usepackage{forest}
 \usepackage{booktabs}
 \usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{listings}
 \geometry{a4paper, margin=1in}
 \setlength{\parindent}{0pt}
 \begin{document}
 \begin{center}
  {\Large \textbf{DISTRIBUTED SYSTEMS, FALL 2025}} \\[3em]
  {\Large \textbf{Project, Due Date: 12.12}} \\[0.5em]
- {\large \textit{Daniele Buser, Alessio Barletta}}
+ {\large \textit{Daniele Buser, Alessio Barletta,}}
 \end{center}
+
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    frame=single,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
 
 \vspace{1em}
 \section*{Theme}
+WhistleBlower is a blockchain-based platform inspired by WikiLeaks,
+designed to empower journalists and whistleblowers to share sensitive 
+information with the public anonymously and without the risk of government censorship. 
+By leveraging the immutable nature of blockchain technology, articles published 
+on WhistleBlower cannot be altered or removed, ensuring transparency and preserving the integrity of investigative journalism.
 
 \section*{Usage Instructions}
 
+\subsection*{Prerequisites}
+\begin{itemize}
+    \item \textbf{Node.js}: 20 LTS or above
+    \item \textbf{npm}: 7.0.0 or above
+\end{itemize}
+
+To run the application follow the commands below:
+\begin{lstlisting}[language=bash]
+sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+npm install -g ic-mops
+npm install
+mops install
+dfx start --background
+dfx deploy
+\end{lstlisting}
+
 \section*{Implementation}
 
+\subsection*{Platform introduction}
+For the frontend, we have an application deployed on the Internet Computer, for the backend We
+have used Motoko for its implementation. Moreover, we used Internet Identity for authentication.
+
+Regarding Internet Identity, we rely on a local canister for development while for production we use the public one.
+
+On our platform, whistleblowers can create threads to share their stories, which can include multiple files.
+
+To be able to upload files users have to create an account and log in using Internet Identity. 
+
+We have implemented a role based access control system with three roles: admins, journalists and users (whistleblowers), the idea behind it is that
+admins can manage the platform and moderate content, journalists are nominated directly by admins and their main role is to review the stories submitted by users before they are verified.
+This is done to ensure that the content is accurate and reliable before being published.
+
+Users (whistleblowers) can create threads and upload files, but their stories won't be verified until a journalist reviews and approves them.
+
+On top of this, users can filter stories based on different criteria such as publication status, industry tags and countries, and most importantly comment on them and 
+assign a vote.
+
+Users also have a credibility score, which is a ratio based on the number of likes and dislikes received on their stories.
+This allows users to estimate the reliability of a whistleblower based on their past contributions.
+
+\subsection*{Alessio Barletta}
+I Implemented all the authentication part (both frontend and backend) using Internet Identity, the role based access control system and user related backend methods.
+Moreover, I mainly worked in the connection between frontend and backend, implementing a good part of the adapters and hooks needed to fetch and display data from the backend.
+
 \section*{Challenges Faced}
+
+\subsection*{Alessio Barletta}
+The main challenges faced were the following:
+\begin{itemize}
+    \item \textbf{Integrating Internet Identity}: understanding how to properly use Internet Identity, especially finding 
+the correct documentation and examples to follow. How to integrate it with role based access control was also a challenge.
+    \item \textbf{Adapting data between frontend and backend}: another challenge was how to properly adapt data structures between frontend and backend, especially when dealing with complex types such as files and stories with multiple attributes.
+\end{itemize}
 
 \vspace{1em}
 \end{document}

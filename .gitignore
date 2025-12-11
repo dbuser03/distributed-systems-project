@@ -33,3 +33,5 @@ documentation/*.fdb_latexmk
 documentation/*.files
 documentation/*.synctex.gz
 documentation/*.pdf
+documentation/*.fls
+documentation/*.out
