@@ -146,6 +146,14 @@ http://localhost:4943?canisterId={asset_canister_id}
 
 > **Note**: Replace `{asset_canister_id}` with the actual canister ID displayed after deployment.
 
+### Load Demo Data 
+
+To load some demo threads, click in the terminal the link for the backend canister "forum" via Candid Interface, it will be availabe at
+
+```
+ forum: http://127.0.0.1:4943/?canisterId={backend_canister_id}
+```
+Once opened, search for the `createDemo` method and click the button "Call", wait until it returns a status code 200 and reload the frontend page.
 ### Development Workflow
 
 **Backend Changes:**

@@ -84,6 +84,7 @@ persistent actor Forum {
       };
     };
     let id = await DocumentStore.createThread(threadsStore, caller, input, fileRegion, base);
+    base := base + lastStoredBatchSize;
     ReverseIndexes.indexThreadTags(tagIndex, input.tags, id);
     ReverseIndexes.indexThreadByScore(scoreIndexHash, id);
     isScoreIndexSorted := false;
