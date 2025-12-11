@@ -580,13 +580,14 @@ persistent actor Forum {
 
   public shared (msg) func getUserComments(
     userId : Principal
-  ) : async { #ok : [CommentId]; #err : Int } {
+  ) : async { #ok : [Comment]; #err : Int } {
     let caller = msg.caller;
     if (not Utils.isValidUser(caller, users)) {
       return #err(401);
     };
     let res = await UserLogic.getUserComments(users, userId);
-    return #ok(res);
+    let res2 = await DocumentStore.getComments(commentsStore, res);
+    return #ok(res2);
   };
 
   // ----------- Demo Call ---------------
