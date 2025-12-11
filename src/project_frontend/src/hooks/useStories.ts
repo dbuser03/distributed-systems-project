@@ -16,7 +16,7 @@ const threadToStory = (thread: any): Story => {
     createdAt: BigInt(thread.createdAt),
     publishedAt: BigInt(thread.createdAt),
     industryTags: thread.tags,
-    country: "OTHER",
+    countries: [],
     publisherId: thread.author.toText(),
     upvotes: Number(thread.likes),
     downvotes: Number(thread.dislikes),

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ISICSectionKey, Story } from "../types";
-import { mockStories } from "../data";
 import { ActorSubclass } from "@dfinity/agent";
 import type { _SERVICE } from "../../../declarations/forum/forum.did";
 
@@ -36,26 +35,6 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
   const [formData, setFormData] = useState<StoryFormData>(initialFormData);
 
   const isEditing = Boolean(storyId);
-
-  // Load existing story data when editing
-  useEffect(() => {
-    if (!storyId) return;
-
-    const story: Story | undefined = mockStories.find(
-      (story: Story) => story.id === storyId
-    );
-    if (!story) return;
-
-    setFormData({
-      title: story.title,
-      preview: story.preview,
-      content: story.content,
-      industryTags: story.industryTags,
-      industryTagInput: "",
-      countryInput: "",
-      countries: story.countries,
-    });
-  }, [storyId]);
 
   // Field update handlers
   const updateField = useCallback(
@@ -100,36 +79,35 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       if (!canPublish || !actor) return;
 
       try {
-  let file: [] | [number[][]] = [];
-  let fileType: [] | [string[]] = [];
+        let file: [] | [number[][]] = [];
+        let fileType: [] | [string[]] = [];
 
-  if (formData.file && formData.file.length > 0) {
-    const buffers = await Promise.all(
-      formData.file.map((f) => f.arrayBuffer())
-    );
+        if (formData.file && formData.file.length > 0) {
+          const buffers = await Promise.all(
+            formData.file.map((f) => f.arrayBuffer())
+          );
 
-    const fileBytesList: number[][] = buffers.map((arrayBuffer) => {
-      const uint8 = new Uint8Array(arrayBuffer);
-      return Array.from(uint8);
-    });
+          const fileBytesList: number[][] = buffers.map((arrayBuffer) => {
+            const uint8 = new Uint8Array(arrayBuffer);
+            return Array.from(uint8);
+          });
 
-    const fileNames: string[] = formData.file.map((f) => f.name);
+          const fileNames: string[] = formData.file.map((f) => f.name);
 
-    file = [fileBytesList];
-    fileType = [fileNames];
-  }
+          file = [fileBytesList];
+          fileType = [fileNames];
+        }
 
-  const input = {
-    title: formData.title,
-    abstract: formData.preview,
-    body: formData.content,
-    tags: [...formData.industryTags, ...(formData.countries || [])],
-    file,
-    fileType,
-  };
+        const input = {
+          title: formData.title,
+          abstract: formData.preview,
+          body: formData.content,
+          tags: [...formData.industryTags, ...(formData.countries || [])],
+          file,
+          fileType,
+        };
 
         const result = await actor.createThread(input);
-
 
         if ("id" in result) {
           console.log("Story published successfully with ID:", result.id);

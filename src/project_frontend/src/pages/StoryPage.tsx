@@ -8,6 +8,7 @@ import {
 } from "../components/ui";
 import { useStory } from "../hooks";
 import CommentThread from "../components/ui/CommentThread";
+import { StoryAttachments } from "../components/ui/StoryAttachment";
 
 function StoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +36,8 @@ function StoryPage() {
           upvotes={story.upvotes}
           downvotes={story.downvotes}
         />
+
+        <StoryAttachments files={story.files ?? []} />
       </article>
 
       <CommentThread comments={comments ?? []} threadId={story.id} />
