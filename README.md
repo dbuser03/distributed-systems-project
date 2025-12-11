@@ -146,6 +146,23 @@ http://localhost:4943?canisterId={asset_canister_id}
 
 > **Note**: Replace `{asset_canister_id}` with the actual canister ID displayed after deployment.
 
+### Deploy To Playground
+If when deploying to the playground the Internet identity is not working, follow these commands:  
+
+```
+dfx deploy project_frontend --playground  
+dfx deploy forum --playground
+```
+
+If this does not work, you may also want to:  
+
+```
+dfx identity new --storage-mode=plaintext deploy_test  
+dfx identity use deploy_test
+```
+
+and remove the .dfx folder.
+
 ### Load Demo Data 
 
 To load some demo threads, click in the terminal the link for the backend canister "forum" via Candid Interface, it will be availabe at
@@ -154,6 +171,9 @@ To load some demo threads, click in the terminal the link for the backend canist
  forum: http://127.0.0.1:4943/?canisterId={backend_canister_id}
 ```
 Once opened, search for the `createDemo` method and click the button "Call", wait until it returns a status code 200 and reload the frontend page.
+
+### Note: the application was tested both on MacOs and Linux.
+
 ### Development Workflow
 
 **Backend Changes:**
