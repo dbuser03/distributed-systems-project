@@ -75,7 +75,7 @@ export function useUserProfile(userId: string | undefined): UserProfile | null {
           userId,
           threadsCreated,
           contributions,
-          credibilityScore: userProfile?.credibilityScore ?? 0,
+          credibilityScore: credibilityScore,
         });
       } catch (error) {
         console.error("Error fetching user profile:", error);

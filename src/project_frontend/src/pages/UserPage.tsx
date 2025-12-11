@@ -29,7 +29,6 @@ function UserPage() {
       try {
         const principal = Principal.fromText(targetUserId);
         const profileResult = await actor.getUserProfile(principal);
-
         if ("ok" in profileResult) {
           setViewedUserAlias(profileResult.ok.alias);
           const roleVariant = profileResult.ok.role;

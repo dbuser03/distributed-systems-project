@@ -309,14 +309,10 @@ persistent actor Forum {
     #list : [Thread];
     #err : Int;
   } {
-    if (not Utils.isValidUser(msg.caller, users)) {
-      return #err(401);
-    };
-    // Fetch the user to ensure they exist and are not banned
     let userResult = users.get(userId);
     switch (userResult) {
       case (null) {
-        return #err(500) // If user doesn't exist or is banned, return empty list
+        return #err(500)
       };
       case (?user) {
         // Get the list of thread IDs from the user's data
@@ -583,10 +579,6 @@ persistent actor Forum {
   public shared (msg) func getUserComments(
     userId : Principal
   ) : async { #ok : [Comment]; #err : Int } {
-    let caller = msg.caller;
-    if (not Utils.isValidUser(caller, users)) {
-      return #err(401);
-    };
     let res = await UserLogic.getUserComments(users, userId);
     let res2 = await DocumentStore.getComments(commentsStore, res);
     return #ok(res2);
