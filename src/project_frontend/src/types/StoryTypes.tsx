@@ -13,6 +13,11 @@ export type EncryptionMetadata = {
   // The key might be shared via off-chain channels or encrypted with the journalist's public key
 };
 
+export type StoryFile = {
+  fileName: string;
+  fileData: number[]; // Nat8 encoded
+};
+
 export type Story = {
   // Public fields
   id: string;
@@ -21,7 +26,7 @@ export type Story = {
 
   // Private fields
   content: string;
-  encryption: EncryptionMetadata;
+  // encryption: EncryptionMetadata;
 
   status: StoryStatus;
 
@@ -38,7 +43,7 @@ export type Story = {
   downvotes: number;
 };
 
-export type VoteType = "up" | "down" | null;
+export type VoteType = "up" | "down" | "null";
 
 export type ISICSectionKey =
   | "A"

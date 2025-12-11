@@ -12,15 +12,11 @@ const threadToStory = (thread: any): Story => {
     title: thread.title,
     preview: thread.abstract,
     content: thread.body,
-    encryption: {
-      isEncrypted: false,
-      algorithm: "NONE",
-    },
     status: "PUBLISHED",
     createdAt: BigInt(thread.createdAt),
     publishedAt: BigInt(thread.createdAt),
     industryTags: thread.tags,
-    country: "OTHER", // Default, you might want to add country to Thread type
+    country: "OTHER",
     publisherId: thread.author.toText(),
     upvotes: Number(thread.likes),
     downvotes: Number(thread.dislikes),

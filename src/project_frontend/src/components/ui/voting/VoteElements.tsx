@@ -36,6 +36,7 @@ interface VoteButtonProps {
   isActive: boolean;
   onClick: (e: React.MouseEvent) => void;
   size?: "xs" | "sm" | "md";
+  disabled?: boolean;
 }
 
 export function VoteButton({
@@ -43,6 +44,7 @@ export function VoteButton({
   isActive,
   onClick,
   size = "md",
+  disabled = false,
 }: VoteButtonProps) {
   const isUpvote = direction === "up";
   const activeColor = isUpvote ? "text-success" : "text-error";
@@ -53,11 +55,12 @@ export function VoteButton({
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`btn btn-ghost ${btnSize} btn-circle ${
         isActive
           ? `${activeColor} ${hoverColor}`
           : `text-base-content/70 ${hoverColor}`
-      }`}
+      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       aria-label={isUpvote ? "Upvote" : "Downvote"}
     >
       <VoteArrow direction={direction} isActive={isActive} size={size} />

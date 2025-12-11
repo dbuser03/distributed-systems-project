@@ -8,7 +8,6 @@ import { ISICSectionKey } from "../../../types";
 
 interface StoryEditorFormProps {
   formData: StoryFormData;
-  canSaveDraft: boolean;
   canPublish: boolean;
   onUpdateField: <K extends keyof StoryFormData>(
     field: K,
@@ -16,25 +15,22 @@ interface StoryEditorFormProps {
   ) => void;
   onAddTag: (tag: string) => void;
   onRemoveTag: (tag: ISICSectionKey) => void;
-  onSaveDraft: (e: React.FormEvent) => void;
   onPublish: (e: React.FormEvent) => void;
   onCancel: () => void;
 }
 
 export function StoryEditorForm({
   formData,
-  canSaveDraft,
   canPublish,
   onUpdateField,
   onAddTag,
   onRemoveTag,
-  onSaveDraft,
   onPublish,
   onCancel,
 }: StoryEditorFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    onUpdateField("file", file);
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    onUpdateField("file", files as StoryFormData["file"]);
   };
 
   return (
@@ -88,18 +84,22 @@ export function StoryEditorForm({
         </div>
         <div className="flex-1">
           <fieldset className="fieldset">
-            <legend className="fieldset-legend pb-3">Pick a file</legend>
+            <legend className="fieldset-legend pb-3">Pick file(s)</legend>
             <div className="flex gap-2 items-start">
               <input
                 type="file"
                 className="file-input flex-1"
+                multiple
                 onChange={handleFileChange}
               />
             </div>
-            {formData.file && (
-              <p className="text-sm text-gray-600 mt-1">
-                Selected: {formData.file.name}
-              </p>
+
+            {formData.file && formData.file.length > 0 && (
+              <ul className="text-sm text-gray-600 mt-1 list-disc list-inside">
+                {formData.file.map((f, idx) => (
+                  <li key={idx}>{f.name}</li>
+                ))}
+              </ul>
             )}
           </fieldset>
         </div>
@@ -116,9 +116,7 @@ export function StoryEditorForm({
       />
 
       <EditorActions
-        canSaveDraft={canSaveDraft}
         canPublish={canPublish}
-        onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onCancel={onCancel}
       />

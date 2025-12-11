@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { mockStories } from "../data";
+import { Story } from "../types";
+
+import { useAuth } from "../context/authContext";
+import { useVoteContext } from "../context/voteContext";
+
 import {
   StoryLink,
   SearchInput,
@@ -9,7 +13,49 @@ import {
 } from "../components/ui";
 import { useStoryFilters } from "../hooks";
 
+import { adaptThreadToStory, BackendThread, extractIDs } from "../adapters/storyAdapter";
+
 function StoryGalleryPage() {
+
+  const [stories, setStories] = useState<Story[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { actor } = useAuth();
+  const { loadUserVotes } = useVoteContext();
+
+  useEffect(() => {
+    const fetchThreads = async () => {
+      try {
+        setIsLoading(true);
+        console.log("Fetching threads from Forum canister...");
+
+        const rawThreads = await actor.getThreadsByScore(0n, 50n);
+        const adaptedStories = (rawThreads as unknown as BackendThread[]).map(adaptThreadToStory);
+
+        setStories(adaptedStories);
+
+        // Carica i voti dell'utente per tutti i thread
+        const threadIDs = extractIDs(rawThreads as unknown as BackendThread[]);
+        const threadsForVotes = adaptedStories.map((s) => ({
+          id: s.id,
+          upvotes: s.upvotes,
+          downvotes: s.downvotes,
+        }));
+        
+        await loadUserVotes(threadIDs, threadsForVotes);
+
+      } catch (error) {
+        console.error("Error in loading threads:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchThreads();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actor]);
+
+
   const {
     filters,
     calendarMonth,
@@ -22,7 +68,35 @@ function StoryGalleryPage() {
     setVerifiedOnly,
     clearAllFilters,
     hasActiveFilters,
-  } = useStoryFilters(mockStories);
+  } = useStoryFilters(stories);
+
+  // Pagination state
+  const PAGE_SIZE = 5;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredStories.length / PAGE_SIZE));
+  const pagedStories = filteredStories.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  // Reset to page 1 when filters/search change
+  React.useEffect(() => {
+    setPage(1);
+  }, [
+    filters.search,
+    filters.selectedTags,
+    filters.selectedCountries,
+    filters.dateRange,
+    filters.verifiedOnly,
+  ]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-full p-8 flex justify-center items-center">
+        <p className="animate-pulse">Loading stories...</p>
+      </div>
+    );
+  }
 
   const showEmptyState = filteredStories.length === 0 && hasActiveFilters;
 

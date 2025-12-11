@@ -1,62 +1,44 @@
-import { useState, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { VoteType } from "../types";
+import { useVoteContext } from "../context/voteContext";
 
 interface UseVoteProps {
   initialUpvotes: number;
   initialDownvotes: number;
+  storyId: string;
 }
 
 interface UseVoteReturn {
   userVote: VoteType;
   score: number;
+  isLoaded: boolean;
   handleVote: (voteType: "up" | "down", e: React.MouseEvent) => void;
 }
 
 export function useVote({
   initialUpvotes,
   initialDownvotes,
+  storyId,
 }: UseVoteProps): UseVoteReturn {
-  const [userVote, setUserVote] = useState<VoteType>(null);
-  const [upvotes, setUpvotes] = useState(initialUpvotes);
-  const [downvotes, setDownvotes] = useState(initialDownvotes);
+  const { getVoteState, vote, loadSingleVote } = useVoteContext();
 
-  const score = upvotes - downvotes;
+  // Carica il voto dell'utente se non è già nel context
+  useEffect(() => {
+    loadSingleVote(storyId, initialUpvotes, initialDownvotes);
+  }, [storyId, initialUpvotes, initialDownvotes, loadSingleVote]);
+
+  const { userVote, score, isLoaded } = getVoteState(storyId, initialUpvotes, initialDownvotes);
 
   const handleVote = useCallback(
-    (voteType: "up" | "down", e: React.MouseEvent) => {
+    async (voteType: "up" | "down", e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-
-      if (userVote === voteType) {
-        // Remove vote
-        setUserVote(null);
-        if (voteType === "up") {
-          setUpvotes((prev) => prev - 1);
-        } else {
-          setDownvotes((prev) => prev - 1);
-        }
-      } else if (userVote === null) {
-        // New vote
-        setUserVote(voteType);
-        if (voteType === "up") {
-          setUpvotes((prev) => prev + 1);
-        } else {
-          setDownvotes((prev) => prev + 1);
-        }
-      } else {
-        // Changing vote
-        setUserVote(voteType);
-        if (voteType === "up") {
-          setUpvotes((prev) => prev + 1);
-          setDownvotes((prev) => prev - 1);
-        } else {
-          setUpvotes((prev) => prev - 1);
-          setDownvotes((prev) => prev + 1);
-        }
-      }
+      // Non votare se il voto non è ancora stato caricato
+      if (!isLoaded) return;
+      await vote(storyId, voteType);
     },
-    [userVote]
+    [vote, storyId, isLoaded]
   );
 
-  return { userVote, score, handleVote };
+  return { userVote, score, isLoaded, handleVote };
 }

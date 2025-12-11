@@ -18,9 +18,10 @@ function VoteButtons({
   initialDownvotes,
   variant = "default",
 }: VoteButtonsProps) {
-  const { userVote, score, handleVote } = useVote({
+  const { userVote, score, isLoaded, handleVote } = useVote({
     initialUpvotes,
     initialDownvotes,
+    storyId,
   });
 
   const size = variant === "small" ? "xs" : variant === "compact" ? "sm" : "md";
@@ -32,25 +33,30 @@ function VoteButtons({
       ? "flex items-center gap-1 bg-base-200 rounded-full px-2 py-1"
       : "flex flex-col items-center gap-1 bg-base-200 rounded-lg px-2 py-2";
 
+  // Disabilita i pulsanti mentre il voto sta caricando
+  const isDisabled = !isLoaded;
+
   return (
     <div className={containerClass}>
       <VoteButton
         direction="up"
-        isActive={userVote === "up"}
+        isActive={isLoaded && userVote === "up"}
         onClick={(e) => handleVote("up", e)}
         size={size}
+        disabled={isDisabled}
       />
       <VoteScore
         score={score}
-        userVote={userVote}
+        userVote={isLoaded ? userVote : "null"}
         formattedScore={formatScore(score)}
         size={size}
       />
       <VoteButton
         direction="down"
-        isActive={userVote === "down"}
+        isActive={isLoaded && userVote === "down"}
         onClick={(e) => handleVote("down", e)}
         size={size}
+        disabled={isDisabled}
       />
     </div>
   );

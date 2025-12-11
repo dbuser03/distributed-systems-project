@@ -92,6 +92,7 @@ module {
                         likes = seed.likes;
                         dislikes = seed.dislikes;
                         createdAt = now;
+                        isValidated = false;
                     };
 
                     threadsStore.put(tid, thread);
@@ -117,4 +118,5 @@ module {
             };
         };
     };
+
 };

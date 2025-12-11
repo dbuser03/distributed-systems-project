@@ -16,7 +16,7 @@ export interface StoryFormData {
   industryTags: ISICSectionKey[];
   industryTagInput: string;
   countryInput: string;
-  file?: File | null;
+  file?: File[] | null;
   countries?: CountryCode[];
 }
 
@@ -90,20 +90,8 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
   }, []);
 
   // Validation
-  const canSaveDraft = Boolean(formData.title && formData.content);
   const canPublish = Boolean(
     formData.title && formData.content && formData.preview
-  );
-
-  // Actions
-  const handleSaveDraft = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!canSaveDraft) return;
-      // TODO: Implement save draft logic
-      console.log("Saving draft:", formData);
-    },
-    [formData, canSaveDraft]
   );
 
   const handlePublish = useCallback(
@@ -112,27 +100,37 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       if (!canPublish || !actor) return;
 
       try {
-        // Converti il file in array di Blob se presente
-        let fileBlobs: Uint8Array[] | undefined = undefined;
-        let fileTypes: string[] | undefined = undefined;
+  let file: [] | [number[][]] = [];
+  let fileType: [] | [string[]] = [];
 
-        if (formData.file) {
-          const arrayBuffer = await formData.file.arrayBuffer();
-          fileBlobs = [new Uint8Array(arrayBuffer)];
-          fileTypes = [formData.file.type];
-        }
+  if (formData.file && formData.file.length > 0) {
+    const buffers = await Promise.all(
+      formData.file.map((f) => f.arrayBuffer())
+    );
 
-        const input = {
-          title: formData.title,
-          abstract: formData.preview,
-          body: formData.content,
-          tags: formData.industryTags,
+    const fileBytesList: number[][] = buffers.map((arrayBuffer) => {
+      const uint8 = new Uint8Array(arrayBuffer);
+      return Array.from(uint8);
+    });
+
+    const fileNames: string[] = formData.file.map((f) => f.name);
+
+    file = [fileBytesList];
+    fileType = [fileNames];
+  }
+
+  const input = {
+    title: formData.title,
+    abstract: formData.preview,
+    body: formData.content,
+    tags: formData.industryTags,
           countries: formData.countries || [],
-          file: fileBlobs ? [fileBlobs] : [],
-          fileType: fileTypes ? [fileTypes] : [],
-        };
+    file,
+    fileType,
+  };
 
         const result = await actor.createThread(input);
+
 
         if ("id" in result) {
           console.log("Story published successfully with ID:", result.id);
@@ -159,9 +157,7 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
     updateField,
     addTag,
     removeTag,
-    canSaveDraft,
     canPublish,
-    handleSaveDraft,
     handlePublish,
     handleCancel,
   };

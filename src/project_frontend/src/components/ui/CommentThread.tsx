@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import VoteButtons from "./voting/VoteButtons";
 import { useAuth } from "../../context/authContext";
 
 export type Comment = {
@@ -46,6 +45,8 @@ function CommentThread({
         if (onCommentAdded) {
           onCommentAdded();
         }
+        // Refresh della pagina per mostrare il nuovo commento
+        window.location.reload();
       } else {
         setError(`Failed to post comment: Error code ${result.err}`);
       }
@@ -130,15 +131,7 @@ function CommentThread({
           >
             <div className="card-body p-3">
               <div className="flex items-start gap-3">
-                {/* Vote Section */}
-                <div className="shrink-0">
-                  <VoteButtons
-                    storyId={comment.id}
-                    initialUpvotes={comment.likes}
-                    initialDownvotes={comment.dislikes}
-                    variant="small"
-                  />
-                </div>
+
 
                 {/* Comment Content */}
                 <div className="flex-1 min-w-0">

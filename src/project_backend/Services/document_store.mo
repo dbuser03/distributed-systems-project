@@ -12,6 +12,7 @@ import Region "mo:base/Region";
 import Blob "mo:base/Blob";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
+import Debug "mo:base/Debug";
 import UserLogic "user_logic";
 
 module {
@@ -48,6 +49,7 @@ module {
       likes = 0;
       dislikes = 0;
       createdAt = Time.now();
+      isValidated = false;
     };
 
     threadsStore.put(id, doc);
@@ -104,6 +106,7 @@ module {
           likes = thread.likes;
           dislikes = thread.dislikes;
           createdAt = thread.createdAt;
+          isValidated = thread.isValidated;
         };
 
         threadsStore.put(thread.id, updatedThread);
@@ -180,6 +183,22 @@ module {
     return result;
   };
 
+  public func getThreadsByTimeRange(
+    threadsStore : HashMap.HashMap<ThreadId, Thread>,
+    start : Time.Time,
+    end : Time.Time,
+  ) : async [Thread] {
+
+    var result : [Thread] = [];
+    for (thread in threadsStore.vals()) {
+      if (thread.createdAt >= start and thread.createdAt <= end) {
+        result := Array.append(result, [thread]);
+      };
+    };
+
+    result;
+  };
+
   public func getHydratedThread(
     threadsStore : HashMap.HashMap<ThreadId, Thread>,
     commentsStore : HashMap.HashMap<CommentId, Comment>,
@@ -225,6 +244,7 @@ module {
           likes = baseThread.likes;
           dislikes = baseThread.dislikes;
           createdAt = baseThread.createdAt;
+          isValidated = baseThread.isValidated;
         };
 
         #ok(hydrated);
@@ -238,13 +258,17 @@ module {
     caller : Principal,
     voteType : VoteType,
     threadId : ThreadId,
-  ) : async { #status : Int; #newScore : Int } {
-    switch (threadsStore.get(threadId)) {
+  ) : async { #err : Int; #newScore : Int } {
+    Debug.print(debug_show(threadId));
+    let thr = threadsStore.get(threadId);
+    Debug.print(debug_show(thr));
+    switch (thr) {
       case (null) {
-        #status(404);
+        #err(404);
       };
       case (?thread) {
         let interaction = await UserLogic.hasUserLikedOrDislikedThread(users, caller, threadId);
+        Debug.print(debug_show(interaction));
         let alreadyLiked = switch (interaction) {
           case (#like) true;
           case (_) false;
@@ -263,7 +287,7 @@ module {
         );
 
         if (result.status != 200) {
-          return #status(result.status);
+          return #err(result.status);
         };
 
         let updatedThread : Thread = {
@@ -279,12 +303,13 @@ module {
           likes = result.likes;
           dislikes = result.dislikes;
           createdAt = thread.createdAt;
+          isValidated = thread.isValidated;
         };
         threadsStore.put(thread.id, updatedThread);
         let usrUpd = await UserLogic.updateUserCredibilityScore(users, thread.author, voteType);
         switch(usrUpd) {
           case(#status(404)) {
-            return #status(500);
+            return #err(500);
           };
           case(#status(_)) {
           }
@@ -300,10 +325,10 @@ module {
     caller : Principal,
     voteType : VoteType,
     commentId : CommentId,
-  ) : async (status : Int) {
+  ) : async { #err : Int; #newScore : Int } {
     switch (commentsStore.get(commentId)) {
       case (null) {
-        404;
+        #err(404);
       };
       case (?comment) {
         let interaction = await UserLogic.hasUserLikedOrDislikedComment(users, caller, commentId);
@@ -325,7 +350,7 @@ module {
         );
 
         if (result.status != 200) {
-          return result.status;
+          return #err(result.status);
         };
 
         let updatedComment : Comment = {
@@ -341,12 +366,12 @@ module {
         let usrUpd = await UserLogic.updateUserCredibilityScore(users, comment.author, voteType);
         switch(usrUpd) {
           case(#status(404)) {
-            return 500;
+            return #err(500);
           };
           case(#status(_)) {
           }
         };
-        return 200;
+        return #newScore(result.likes - result.dislikes);
       };
     };
   };
@@ -535,6 +560,7 @@ module {
               likes = thread.likes;
               dislikes = thread.dislikes;
               createdAt = thread.createdAt;
+              isValidated = thread.isValidated;
             };
             threadsStore.put(thread.id, updatedThread);
             ignore commentsStore.remove(commentId);
@@ -543,6 +569,54 @@ module {
         };
       };
     };
-  }
+  };
+
+  public func validateThread(
+    caller : Principal,
+    threadId : ThreadId,
+    users : HashMap.HashMap<Principal, Types.User>,
+    threadsStore : HashMap.HashMap<ThreadId, Thread>,
+  ) : { #ok : ThreadId; #err : Int } {
+
+    switch (users.get(caller)) {
+      case (null) {
+        return #err(401);
+      };
+      case (?u) {
+        switch (u.role) {
+          case (#Verifier) {};
+          case (_) {
+            return #err(401);
+          };
+        };
+      };
+    };
+
+    switch (threadsStore.get(threadId)) {
+      case (null) {
+        return #err(404);
+      };
+      case (?th) {
+        let updated = {
+          id = th.id;
+          author = th.author;
+          title = th.title;
+          abstract = th.abstract;
+          body = th.body;
+          tags = th.tags;
+          file = th.file;
+          fileType = th.fileType;
+          comments = th.comments;
+          likes = th.likes;
+          dislikes = th.dislikes;
+          createdAt = th.createdAt;
+          isValidated = true;
+        };
+
+        threadsStore.put(threadId, updated);
+        return #ok(threadId);
+      };
+    };
+  };
 
 };
