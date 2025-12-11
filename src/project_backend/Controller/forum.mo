@@ -27,6 +27,7 @@ persistent actor Forum {
   public type CommentInput = Types.CommentInput;
   public type HydratedThread = Types.HydratedThread;
   public type VoteType = Types.VoteType;
+  public type User = Types.User;
 
   transient var threadsStore = HashMap.HashMap<ThreadId, Thread>(10, Text.equal, Text.hash);
   // start for the storage of blobs
@@ -331,7 +332,7 @@ persistent actor Forum {
   };
 
   public shared (msg) func getUserFeedbackOnThreads(
-    threadIds : [ThreadId],
+    threadIds : [ThreadId]
   ) : async { #feedback : [(ThreadId, VoteType)]; #err : Int } {
 
     let caller = msg.caller;
@@ -350,7 +351,7 @@ persistent actor Forum {
   };
 
   public shared (msg) func getUserFeedbackOnComments(
-    commentIds : [CommentId],
+    commentIds : [CommentId]
   ) : async { #feedback : [(CommentId, VoteType)]; #err : Int } {
 
     let caller = msg.caller;
@@ -369,7 +370,7 @@ persistent actor Forum {
   };
 
   // Method to check if a user liked or disliked a specific post (ThreadId)
-  public shared (msg) func hasUserLikedOrDislikedThread( postId : ThreadId) : async {
+  public shared (msg) func hasUserLikedOrDislikedThread(postId : ThreadId) : async {
     #feedback : VoteType;
     #err : Int;
   } {
@@ -381,7 +382,7 @@ persistent actor Forum {
     return #feedback(res);
   };
 
-  public shared (msg) func hasUserLikedOrDislikedComment( commentId : CommentId) : async {
+  public shared (msg) func hasUserLikedOrDislikedComment(commentId : CommentId) : async {
     #feedback : VoteType;
     #err : Int;
   } {
@@ -588,6 +589,20 @@ persistent actor Forum {
     let res = await UserLogic.getUserComments(users, userId);
     let res2 = await DocumentStore.getComments(commentsStore, res);
     return #ok(res2);
+  };
+
+  public shared (msg) func getUserProfile(userId : Principal) : async {
+    #ok : User;
+    #err : Int;
+  } {
+    switch (users.get(userId)) {
+      case (?u) {
+        return #ok(u);
+      };
+      case (null) {
+        return #err(404);
+      };
+    };
   };
 
   // ----------- Demo Call ---------------
