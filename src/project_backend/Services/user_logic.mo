@@ -4,6 +4,8 @@ import Types "../Model/types";
 import Array "mo:base/Array";
 import Bool "mo:base/Bool";
 import Principal "mo:base/Principal";
+import Float "mo:base/Float";
+import Int "mo:base/Int";
 
 module {
     public type Thread = Types.Thread;
@@ -12,6 +14,59 @@ module {
     public type CommentId = Types.CommentId;
     public type User = Types.User;
     public type VoteType = Types.VoteType;
+
+    public func updateUserCredibilityScore(
+        users : HashMap.HashMap<Principal, Types.User>,
+        userId : Principal,
+        voteType : VoteType,
+    ) : async { #status : Int } {
+
+        switch (users.get(userId)) {
+
+            case (null) {
+                return #status(404);
+            };
+
+            case (?usr) {
+                let newAllLikes = switch (voteType) {
+                    case (#like) usr.allLikes + 1;
+                    case (_) usr.allLikes;
+                };
+
+                let newAllDislikes = switch (voteType) {
+                    case (#dislike) usr.allDislikes + 1;
+                    case (_) usr.allDislikes;
+                };
+                var alpha = 10;
+                let num : Float = Float.fromInt(newAllLikes + alpha);
+
+                let denom : Float = Float.fromInt(newAllLikes + newAllDislikes + 2 * alpha);
+                let ratio : Float = num / denom;
+                let scaled : Float = ratio * 100.0;
+                let newCredibility : Int = Float.toInt(Float.nearest(scaled));
+                let updatedUser : Types.User = {
+                    id = usr.id;
+                    alias = usr.alias;
+                    role = usr.role;
+                    credibilityScore = newCredibility;
+                    allLikes = newAllLikes;
+                    allDislikes = newAllDislikes;
+                    isBanned = usr.isBanned;
+                    createdAt = usr.createdAt;
+                    threads = usr.threads;
+                    comments = usr.comments;
+                    likedThreads = usr.likedThreads;
+                    dislikedThreads = usr.dislikedThreads;
+                    likedComments = usr.likedComments;
+                    dislikedComments = usr.dislikedComments;
+                };
+
+                users.put(userId, updatedUser);
+
+                return #status(200);
+            };
+        };
+    };
 
     // Method to check if a user liked or disliked a specific post (ThreadId)
     public func hasUserLikedOrDislikedThread(users : HashMap.HashMap<Principal, Types.User>, userId : Principal, postId : ThreadId) : async VoteType {

@@ -157,7 +157,6 @@ persistent actor Forum {
           };
           case (#none) {};
         };
-
         #status(200);
       };
     };
@@ -421,6 +420,8 @@ persistent actor Forum {
           dislikedThreads = existingUser.dislikedThreads;
           dislikedComments = existingUser.dislikedComments;
           likedComments = existingUser.likedComments;
+          allLikes = existingUser.allLikes;
+          allDislikes = existingUser.allDislikes;
         };
 
         users.put(caller, updatedUser);
@@ -480,7 +481,8 @@ persistent actor Forum {
           dislikedThreads = u.dislikedThreads;
           dislikedComments = u.dislikedComments;
           likedComments = u.likedComments;
-
+          allLikes = u.allLikes;
+          allDislikes = u.allDislikes;
         };
         users.put(targetUser, updatedUser);
         return #ok;
@@ -512,6 +514,8 @@ persistent actor Forum {
       dislikedThreads = [];
       dislikedComments = [];
       likedComments = [];
+      allLikes = 0;
+      allDislikes = 0;
     };
 
     switch (users.get(p)) {
@@ -524,7 +528,7 @@ persistent actor Forum {
           id = p;
           alias = Principal.toText(p);
           role = if (isOwner) #Admin else #User;
-          credibilityScore = 10;
+          credibilityScore = 50;
           isBanned = false;
           createdAt = Time.now();
           threads = [];
@@ -533,6 +537,8 @@ persistent actor Forum {
           dislikedThreads = [];
           dislikedComments = [];
           likedComments = [];
+          allLikes = 0;
+          allDislikes = 0;
         };
         users.put(p, newUser);
         user := newUser;
@@ -581,7 +587,7 @@ persistent actor Forum {
   };
 
   // ----------- Demo Call ---------------
-  public shared func createDemo() : async {#status : Int} {
+  public shared func createDemo() : async { #status : Int } {
     isScoreIndexSorted := false;
     await Demo.seedAllDemoData(users, threadsStore, commentsStore, scoreIndexHash, tagIndex);
 

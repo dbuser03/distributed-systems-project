@@ -21,6 +21,8 @@ module {
     alias : Text;
     role : Role;
     credibilityScore : Int;
+    allLikes : Int;
+    allDislikes : Int;
     isBanned : Bool;
     createdAt : Time.Time;
     threads: [ThreadId]; // New field to store the user’s created threads
