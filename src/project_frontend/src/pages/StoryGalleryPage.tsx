@@ -58,14 +58,6 @@ function StoryGalleryPage() {
     hasActiveFilters,
   } = useStoryFilters(stories);
 
-    if (isLoading) {
-    return (
-      <div className="min-h-full p-8 flex justify-center items-center">
-        <p className="animate-pulse">Loading stories...</p>
-      </div>
-    );
-  }
-
   // Pagination state
   const PAGE_SIZE = 5;
   const [page, setPage] = useState(1);
@@ -85,6 +77,14 @@ function StoryGalleryPage() {
     filters.dateRange,
     filters.verifiedOnly,
   ]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-full p-8 flex justify-center items-center">
+        <p className="animate-pulse">Loading stories...</p>
+      </div>
+    );
+  }
 
   const showEmptyState = filteredStories.length === 0 && hasActiveFilters;
 
