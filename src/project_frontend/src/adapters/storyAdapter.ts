@@ -1,24 +1,24 @@
 // src/adapters/storyAdapter.ts
 
 import { Principal } from "@dfinity/principal";
-import { Story, ISICSectionKey, CountryCode } from "../types";
+import { Story, ISICSectionKey, CountryCode, VoteType } from "../types";
 import { StoryFile } from "../types";
 
 import { Comment } from "../components/ui/CommentThread";
 
 export interface BackendThread {
-  id: string; 
+  id: string;
   author: Principal;
   title: string;
   abstract: string;
   body: string;
   tags: string[];
-  file: any[]; 
+  file: any[];
   fileType: string[];
-  comments:  BackendComment[]; 
-  likes: bigint; 
-  dislikes: bigint; 
-  createdAt: bigint; 
+  comments: BackendComment[];
+  likes: bigint;
+  dislikes: bigint;
+  createdAt: bigint;
 }
 
 export interface BackendComment {
@@ -53,7 +53,7 @@ function safePrincipalToText(p: any): string {
 function convertDate(val: bigint): bigint {
   if (val === undefined || val === null) {
     // Ritorna 0 o la data attuale in formato BigInt
-    return 0n; 
+    return 0n;
   }
 
   // 2. Se è un array (caso Motoko Optional ?Int)
@@ -118,10 +118,10 @@ export function adaptThreadToStory(thread: BackendThread): Story {
     createdAt: convertDate(thread.createdAt),
     publishedAt: convertDate(thread.createdAt),
 
-    industryTags: industryTags, 
+    industryTags: industryTags,
     country: country,
-    files: adaptBackendFiles(thread.file, thread.fileType), 
-    
+    files: adaptBackendFiles(thread.file, thread.fileType),
+
 
     status: "VERIFIED",
   };
@@ -138,3 +138,7 @@ export function adaptComment(comment: BackendComment): Comment {
     createdAt: convertDate(comment.createdAt),
   };
 }
+
+  export function extractIDs(threads: BackendThread[]): string[] {
+    return threads.map(t => t.id);
+  }

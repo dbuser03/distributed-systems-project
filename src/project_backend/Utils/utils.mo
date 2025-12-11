@@ -2,6 +2,7 @@ import Random "mo:base/Random";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
 import HashMap "mo:base/HashMap";
+import Text "mo:base/Text";
 import Types "../Model/types";
 
 module {
@@ -118,4 +119,12 @@ module {
     };
   };
 
+  public func textToVoteType(t : Text) : VoteType {
+    switch (t) {
+      case ("up") { #like };
+      case ("down") { #dislike };
+      case ("null") { #none };
+      case (_) { #none };
+    };
+  };
 };

@@ -14,6 +14,7 @@ import Utils "../Utils/utils";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
 import UserLogic "../Services/user_logic";
+import Debug "mo:base/Debug";
 
 // This will act as a central hub: receives the requests from the user (add post, like, unlike, etc.) calls the relative methods in documentStore, and keeps a reverse index (cache) of the threads by likes and tags to make the front page navigable.
 persistent actor Forum {
@@ -133,22 +134,23 @@ persistent actor Forum {
   };
 
   public shared (msg) func addFeedbackThread(
-    input : VoteType,
+    input : Text,
     threadId : ThreadId,
-  ) : async { #status : Int } {
+  ) : async { #err : Int; #newScore : Int } {
     let caller = msg.caller;
     if (not Utils.isValidUser(caller, users)) {
-      return #status(401);
+      return #err(401);
     };
-    let res = await DocumentStore.addFeedbackThread(threadsStore, users, caller, input, threadId);
+    let inputParsed = Utils.textToVoteType(input);
+    let res = await DocumentStore.addFeedbackThread(threadsStore, users, caller, inputParsed, threadId);
     switch (res) {
-      case (#status(code)) {
-        #status(code);
+      case (#err(code)) {
+        #err(code);
       };
       case (#newScore(val)) {
         ReverseIndexes.updateScoreOfThread(scoreIndexHash, val, threadId);
         isScoreIndexSorted := false;
-        switch (input) {
+        switch (inputParsed) {
           case (#like) {
             await UserLogic.addLikedThread(users, caller, threadId);
           };
@@ -157,26 +159,27 @@ persistent actor Forum {
           };
           case (#none) {};
         };
-        #status(200);
+        #newScore(val);
       };
     };
   };
 
   public shared (msg) func addFeedbackComment(
-    input : VoteType,
+    input : Text,
     commentId : CommentId,
-  ) : async { #status : Int } {
+  ) : async { #err : Int; #newScore : Int } {
     let caller = msg.caller;
     if (not Utils.isValidUser(caller, users)) {
-      return #status(401);
+      return #err(401);
     };
-    let res = await DocumentStore.addFeedbackComment(commentsStore, users, caller, input, commentId);
+    let inputParsed = Utils.textToVoteType(input);
+    let res = await DocumentStore.addFeedbackComment(commentsStore, users, caller, inputParsed, commentId);
     switch (res) {
-      case (404) {
-        #status(404);
+      case (#err(code)) {
+        #err(code);
       };
-      case (200) {
-        switch (input) {
+      case (#newScore(val)) {
+        switch (inputParsed) {
           case (#like) {
             await UserLogic.addLikedComment(users, caller, commentId);
           };
@@ -185,7 +188,7 @@ persistent actor Forum {
           };
           case (#none) {};
         };
-        #status(200);
+        #newScore(val);
       };
     };
   };
@@ -328,7 +331,6 @@ persistent actor Forum {
   };
 
   public shared (msg) func getUserFeedbackOnThreads(
-    userId : Principal,
     threadIds : [ThreadId],
   ) : async { #feedback : [(ThreadId, VoteType)]; #err : Int } {
 
@@ -340,7 +342,7 @@ persistent actor Forum {
     var results : [(ThreadId, VoteType)] = [];
 
     for (threadId in threadIds.vals()) {
-      let vote = await UserLogic.hasUserLikedOrDislikedThread(users, userId, threadId);
+      let vote = await UserLogic.hasUserLikedOrDislikedThread(users, caller, threadId);
       results := Array.append(results, [(threadId, vote)]);
     };
 
@@ -348,7 +350,6 @@ persistent actor Forum {
   };
 
   public shared (msg) func getUserFeedbackOnComments(
-    userId : Principal,
     commentIds : [CommentId],
   ) : async { #feedback : [(CommentId, VoteType)]; #err : Int } {
 
@@ -360,7 +361,7 @@ persistent actor Forum {
     var results : [(CommentId, VoteType)] = [];
 
     for (commentId in commentIds.vals()) {
-      let vote = await UserLogic.hasUserLikedOrDislikedComment(users, userId, commentId);
+      let vote = await UserLogic.hasUserLikedOrDislikedComment(users, caller, commentId);
       results := Array.append(results, [(commentId, vote)]);
     };
 
@@ -368,25 +369,27 @@ persistent actor Forum {
   };
 
   // Method to check if a user liked or disliked a specific post (ThreadId)
-  public shared (msg) func hasUserLikedOrDislikedThread(userId : Principal, postId : ThreadId) : async {
+  public shared (msg) func hasUserLikedOrDislikedThread( postId : ThreadId) : async {
     #feedback : VoteType;
     #err : Int;
   } {
-    if (not Utils.isValidUser(msg.caller, users)) {
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
       return #err(401);
     };
-    let res = await UserLogic.hasUserLikedOrDislikedThread(users, userId, postId);
+    let res = await UserLogic.hasUserLikedOrDislikedThread(users, caller, postId);
     return #feedback(res);
   };
 
-  public shared (msg) func hasUserLikedOrDislikedComment(userId : Principal, commentId : CommentId) : async {
+  public shared (msg) func hasUserLikedOrDislikedComment( commentId : CommentId) : async {
     #feedback : VoteType;
     #err : Int;
   } {
-    if (not Utils.isValidUser(msg.caller, users)) {
+    let caller = msg.caller;
+    if (not Utils.isValidUser(caller, users)) {
       return #err(401);
     };
-    let res = await UserLogic.hasUserLikedOrDislikedComment(users, userId, commentId);
+    let res = await UserLogic.hasUserLikedOrDislikedComment(users, caller, commentId);
     return #feedback(res);
   };
 

@@ -172,6 +172,19 @@ module {
         };
     };
 
+    func removeThreadId(arr : [ThreadId], id : ThreadId) : [ThreadId] {
+        Array.filter<ThreadId>(arr, func(x) { x != id });
+    };
+
+    func removeCommentId(arr : [CommentId], id : CommentId) : [CommentId] {
+        Array.filter<CommentId>(
+            arr,
+            func(x : CommentId) : Bool {
+                x != id;
+            },
+        );
+    };
+
     public func addLikedThread(
         users : HashMap.HashMap<Principal, User>,
         userId : Principal,
@@ -179,12 +192,25 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
-                if (not containsThreadId(u.likedThreads, threadId)) {
-                    let updated = {
-                        u with likedThreads = Array.append(u.likedThreads, [threadId])
-                    };
-                    users.put(userId, updated);
+                let cleanedDislikes = if (containsThreadId(u.dislikedThreads, threadId)) {
+                    removeThreadId(u.dislikedThreads, threadId);
+                } else {
+                    u.dislikedThreads;
                 };
+
+                let cleanedLikes = if (containsThreadId(u.likedThreads, threadId)) {
+                    u.likedThreads;
+                } else {
+                    Array.append(u.likedThreads, [threadId]);
+                };
+
+                let updated = {
+                    u with
+                    likedThreads = cleanedLikes;
+                    dislikedThreads = cleanedDislikes;
+                };
+
+                users.put(userId, updated);
             };
             case null {};
         };
@@ -197,12 +223,26 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
-                if (not containsThreadId(u.dislikedThreads, threadId)) {
-                    let updated = {
-                        u with dislikedThreads = Array.append(u.dislikedThreads, [threadId])
-                    };
-                    users.put(userId, updated);
+
+                let cleanedLikes = if (containsThreadId(u.likedThreads, threadId)) {
+                    removeThreadId(u.likedThreads, threadId);
+                } else {
+                    u.likedThreads;
                 };
+
+                let cleanedDislikes = if (containsThreadId(u.dislikedThreads, threadId)) {
+                    u.dislikedThreads;
+                } else {
+                    Array.append(u.dislikedThreads, [threadId]);
+                };
+
+                let updated = {
+                    u with
+                    likedThreads = cleanedLikes;
+                    dislikedThreads = cleanedDislikes;
+                };
+
+                users.put(userId, updated);
             };
             case null {};
         };
@@ -215,12 +255,24 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
-                if (not containsCommentId(u.likedComments, commentId)) {
-                    let updated = {
-                        u with likedComments = Array.append(u.likedComments, [commentId])
-                    };
-                    users.put(userId, updated);
+                let cleanedDislikes = if (containsCommentId(u.dislikedComments, commentId)) {
+                    removeCommentId(u.dislikedComments, commentId);
+                } else {
+                    u.dislikedComments;
                 };
+                let cleanedLikes = if (containsCommentId(u.likedComments, commentId)) {
+                    u.likedComments;
+                } else {
+                    Array.append(u.likedComments, [commentId]);
+                };
+
+                let updated = {
+                    u with
+                    likedComments = cleanedLikes;
+                    dislikedComments = cleanedDislikes;
+                };
+
+                users.put(userId, updated);
             };
             case null {};
         };
@@ -233,12 +285,28 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
-                if (not containsCommentId(u.dislikedComments, commentId)) {
-                    let updated = {
-                        u with dislikedComments = Array.append(u.dislikedComments, [commentId])
-                    };
-                    users.put(userId, updated);
+
+                // Remove from likedComments if present
+                let cleanedLikes = if (containsCommentId(u.likedComments, commentId)) {
+                    removeCommentId(u.likedComments, commentId);
+                } else {
+                    u.likedComments;
                 };
+
+                // Add to dislikedComments if missing
+                let cleanedDislikes = if (containsCommentId(u.dislikedComments, commentId)) {
+                    u.dislikedComments;
+                } else {
+                    Array.append(u.dislikedComments, [commentId]);
+                };
+
+                let updated = {
+                    u with
+                    likedComments = cleanedLikes;
+                    dislikedComments = cleanedDislikes;
+                };
+
+                users.put(userId, updated);
             };
             case null {};
         };

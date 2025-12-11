@@ -12,7 +12,7 @@ import {
 } from "../components/ui";
 import { useStoryFilters } from "../hooks";
 
-import { adaptThreadToStory, BackendThread } from "../adapters/storyAdapter";
+import { adaptThreadToStory, BackendThread, extractIDs } from "../adapters/storyAdapter";
 
 function StoryGalleryPage() {
 
@@ -29,7 +29,17 @@ function StoryGalleryPage() {
 
 
         const rawThreads = await actor.getThreadsByScore(0n, 50n);
-        
+
+        const threadIDs = extractIDs(rawThreads)
+
+        const userInteractionsRaw = await actor.getUserFeedbackOnThreads(threadIDs);
+
+        const userInteractions = "err" in userInteractionsRaw
+          ? []
+          : userInteractionsRaw;
+
+        console.log(userInteractions);
+
         const adaptedStories = (rawThreads as unknown as BackendThread[]).map(adaptThreadToStory);
 
         setStories(adaptedStories);

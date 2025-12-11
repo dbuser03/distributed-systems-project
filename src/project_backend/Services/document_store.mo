@@ -12,6 +12,7 @@ import Region "mo:base/Region";
 import Blob "mo:base/Blob";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
+import Debug "mo:base/Debug";
 import UserLogic "user_logic";
 
 module {
@@ -257,13 +258,17 @@ module {
     caller : Principal,
     voteType : VoteType,
     threadId : ThreadId,
-  ) : async { #status : Int; #newScore : Int } {
-    switch (threadsStore.get(threadId)) {
+  ) : async { #err : Int; #newScore : Int } {
+    Debug.print(debug_show(threadId));
+    let thr = threadsStore.get(threadId);
+    Debug.print(debug_show(thr));
+    switch (thr) {
       case (null) {
-        #status(404);
+        #err(404);
       };
       case (?thread) {
         let interaction = await UserLogic.hasUserLikedOrDislikedThread(users, caller, threadId);
+        Debug.print(debug_show(interaction));
         let alreadyLiked = switch (interaction) {
           case (#like) true;
           case (_) false;
@@ -282,7 +287,7 @@ module {
         );
 
         if (result.status != 200) {
-          return #status(result.status);
+          return #err(result.status);
         };
 
         let updatedThread : Thread = {
@@ -304,7 +309,7 @@ module {
         let usrUpd = await UserLogic.updateUserCredibilityScore(users, thread.author, voteType);
         switch(usrUpd) {
           case(#status(404)) {
-            return #status(500);
+            return #err(500);
           };
           case(#status(_)) {
           }
@@ -320,10 +325,10 @@ module {
     caller : Principal,
     voteType : VoteType,
     commentId : CommentId,
-  ) : async (status : Int) {
+  ) : async { #err : Int; #newScore : Int } {
     switch (commentsStore.get(commentId)) {
       case (null) {
-        404;
+        #err(404);
       };
       case (?comment) {
         let interaction = await UserLogic.hasUserLikedOrDislikedComment(users, caller, commentId);
@@ -345,7 +350,7 @@ module {
         );
 
         if (result.status != 200) {
-          return result.status;
+          return #err(result.status);
         };
 
         let updatedComment : Comment = {
@@ -361,12 +366,12 @@ module {
         let usrUpd = await UserLogic.updateUserCredibilityScore(users, comment.author, voteType);
         switch(usrUpd) {
           case(#status(404)) {
-            return 500;
+            return #err(500);
           };
           case(#status(_)) {
           }
         };
-        return 200;
+        return #newScore(result.likes - result.dislikes);
       };
     };
   };

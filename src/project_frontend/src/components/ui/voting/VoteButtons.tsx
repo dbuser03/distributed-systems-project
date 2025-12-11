@@ -21,6 +21,7 @@ function VoteButtons({
   const { userVote, score, handleVote } = useVote({
     initialUpvotes,
     initialDownvotes,
+    storyId,
   });
 
   const size = variant === "small" ? "xs" : variant === "compact" ? "sm" : "md";

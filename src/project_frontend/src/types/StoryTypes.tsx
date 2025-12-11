@@ -46,7 +46,7 @@ export type Story = {
   downvotes: number;
 };
 
-export type VoteType = "up" | "down" | null;
+export type VoteType = "up" | "down" | "null";
 
 export type ISICSectionKey =
   | "A"
