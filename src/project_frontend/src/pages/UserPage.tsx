@@ -98,9 +98,9 @@ function UserPage() {
           />
 
           <StorySection
-            title="My Contributions"
+            title="My Comments"
             stories={contributions}
-            emptyMessage="You haven't contributed to any threads yet."
+            emptyMessage="You haven't commented on any threads yet."
           />
         </div>
       </div>
