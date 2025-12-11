@@ -7,6 +7,8 @@ import type { _SERVICE } from "../../../declarations/forum/forum.did";
 
 type ForumActor = ActorSubclass<_SERVICE>;
 
+import { CountryCode } from "../types";
+
 export interface StoryFormData {
   title: string;
   preview: string;
@@ -14,6 +16,7 @@ export interface StoryFormData {
   industryTags: ISICSectionKey[];
   industryTagInput: string;
   file?: File | null;
+  countries?: CountryCode[];
 }
 
 const initialFormData: StoryFormData = {
@@ -23,6 +26,7 @@ const initialFormData: StoryFormData = {
   industryTags: [],
   industryTagInput: "",
   file: null,
+  countries: [],
 };
 
 export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {

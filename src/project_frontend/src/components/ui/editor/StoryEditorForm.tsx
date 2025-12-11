@@ -2,6 +2,7 @@ import React from "react";
 import { TextInput, TextArea } from "./FormField";
 import { TagInput } from "./TagInput";
 import { EditorActions } from "./EditorActions";
+import { CountryInput } from "./CountryInput";
 import { StoryFormData } from "../../../hooks/useStoryEditor";
 import { ISICSectionKey } from "../../../types";
 
@@ -67,8 +68,25 @@ export function StoryEditorForm({
           />
         </div>
         <div className="flex-1">
+          <CountryInput
+            countries={formData.countries || []}
+            onAddCountry={(country) =>
+              onUpdateField("countries", [
+                ...(formData.countries || []),
+                country,
+              ])
+            }
+            onRemoveCountry={(country) =>
+              onUpdateField(
+                "countries",
+                (formData.countries || []).filter((c) => c !== country)
+              )
+            }
+          />
+        </div>
+        <div className="flex-1">
           <fieldset className="fieldset">
-            <legend className="fieldset-legend">Pick a file</legend>
+            <legend className="fieldset-legend pb-3">Pick a file</legend>
             <div className="flex gap-2 items-start">
               <input
                 type="file"
