@@ -1,11 +1,12 @@
 import React, { SVGProps } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { useAuth } from "../../context/authContext";
 
 function Sidebar() {
-
   const { isAuthenticated, login, logout } = useAuth() as any;
+  // useLocation automatically tracks current route and updates on navigation/resize
+  const location = useLocation();
 
   return (
     <>
@@ -130,7 +131,11 @@ function Sidebar() {
           {/* Home Mobile */}
           <Link
             to="/"
-            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors group ${
+              location.pathname === "/"
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-base-300"
+            }`}
           >
             <svg
               className="size-[1.2em]"
@@ -145,7 +150,13 @@ function Sidebar() {
               <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
               <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             </svg>
-            <span className="text-xs opacity-70 group-hover:opacity-100">
+            <span
+              className={`text-xs transition-opacity ${
+                location.pathname === "/"
+                  ? "opacity-100 font-medium"
+                  : "opacity-70 group-hover:opacity-100"
+              }`}
+            >
               Home
             </span>
           </Link>
@@ -153,7 +164,11 @@ function Sidebar() {
           {/* Editor Mobile */}
           <Link
             to="/story-editor"
-            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors group ${
+              location.pathname === "/story-editor"
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-base-300"
+            }`}
           >
             <svg
               className="size-[1.2em]"
@@ -168,7 +183,13 @@ function Sidebar() {
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
-            <span className="text-xs opacity-70 group-hover:opacity-100">
+            <span
+              className={`text-xs transition-opacity ${
+                location.pathname === "/story-editor"
+                  ? "opacity-100 font-medium"
+                  : "opacity-70 group-hover:opacity-100"
+              }`}
+            >
               Editor
             </span>
           </Link>
@@ -176,7 +197,11 @@ function Sidebar() {
           {/* Profile Mobile */}
           <Link
             to="/user/1"
-            className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors group ${
+              location.pathname === "/user/1"
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-base-300"
+            }`}
           >
             <svg
               className="size-[1.2em]"
@@ -191,7 +216,13 @@ function Sidebar() {
               <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
               <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
             </svg>
-            <span className="text-xs opacity-70 group-hover:opacity-100">
+            <span
+              className={`text-xs transition-opacity ${
+                location.pathname === "/user/1"
+                  ? "opacity-100 font-medium"
+                  : "opacity-70 group-hover:opacity-100"
+              }`}
+            >
               Profile
             </span>
           </Link>
@@ -202,7 +233,7 @@ function Sidebar() {
             className="flex flex-col items-center gap-1 p-2 hover:bg-base-300 rounded-lg transition-colors group"
           >
             {isAuthenticated ? (
-               // Logout Icon
+              // Logout Icon
               <svg
                 className="size-[1.2em] text-error"
                 xmlns="http://www.w3.org/2000/svg"
@@ -218,7 +249,7 @@ function Sidebar() {
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
             ) : (
-               // Login Icon
+              // Login Icon
               <svg
                 className="size-[1.2em] text-primary"
                 xmlns="http://www.w3.org/2000/svg"

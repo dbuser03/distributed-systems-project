@@ -72,7 +72,7 @@ function CommentThread({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
             <textarea
-              className="textarea textarea-bordered w-full min-h-[80px] text-sm py-2"
+              className="textarea textarea-bordered w-full min-h-20 text-sm py-2"
               placeholder="Write your comment here..."
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}

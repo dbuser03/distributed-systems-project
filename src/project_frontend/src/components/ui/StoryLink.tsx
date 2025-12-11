@@ -6,14 +6,15 @@ import VoteButtons from "./voting/VoteButtons";
 function StoryLink({ story }: { story: Story }) {
   return (
     <article className="card lg:card-side bg-base-100 shadow-sm hover:shadow-lg transition-shadow lg:h-64 w-full rounded-t-lg lg:rounded-lg">
-      <div className="flex items-center pl-4">
+      {/* Desktop: VoteButtons on left, Mobile: below card body */}
+      <div className="hidden lg:flex items-center pl-4">
         <VoteButtons
           storyId={story.id}
           initialUpvotes={story.upvotes}
           initialDownvotes={story.downvotes}
         />
       </div>
-      <div className="card-body">
+      <div className="card-body pb-2">
         <h2 className="card-title text-primary">{story.title}</h2>
         <p className="text-base-content/70 line-clamp-3">{story.preview}</p>
 
@@ -26,6 +27,15 @@ function StoryLink({ story }: { story: Story }) {
             ))}
           </div>
         )}
+        {/* Mobile: VoteButtons below content */}
+        <div className="flex justify-center my-6 lg:hidden">
+          <VoteButtons
+            storyId={story.id}
+            initialUpvotes={story.upvotes}
+            initialDownvotes={story.downvotes}
+            variant="compact"
+          />
+        </div>
       </div>
 
       <figure className="order-first lg:order-last lg:w-96 lg:shrink-0 overflow-hidden">
