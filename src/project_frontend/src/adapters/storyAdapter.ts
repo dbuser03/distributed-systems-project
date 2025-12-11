@@ -101,8 +101,8 @@ export function adaptThreadToStory(thread: BackendThread): Story {
 
   const industryTags = rawTags.filter((t) => t.length === 1) as ISICSectionKey[];
 
-  const foundCountry = rawTags.find((t) => t.length === 2);
-  const country = (foundCountry || "CH") as CountryCode;
+  // Raccogli tutti i country (tag con lunghezza 2)
+  const countries = rawTags.filter((t) => t.length === 2) as CountryCode[];
 
   return {
     id: thread.id,
@@ -119,7 +119,7 @@ export function adaptThreadToStory(thread: BackendThread): Story {
     publishedAt: convertDate(thread.createdAt),
 
     industryTags: industryTags,
-    country: country,
+    countries: countries,
     files: adaptBackendFiles(thread.file, thread.fileType),
 
 

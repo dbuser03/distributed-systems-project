@@ -41,9 +41,13 @@ function StoryHeader({ story }: StoryHeaderProps) {
           </div>
         )}
 
-        {story.country && (
-          <div className="badge badge-accent">
-            {Countries[story.country] || story.country}
+        {story.countries && story.countries.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {story.countries.map((countryCode) => (
+              <span key={countryCode} className="badge badge-accent">
+                {Countries[countryCode] || countryCode}
+              </span>
+            ))}
           </div>
         )}
 

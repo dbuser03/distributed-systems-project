@@ -53,7 +53,7 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
       industryTags: story.industryTags,
       industryTagInput: "",
       countryInput: "",
-      countries: [story.country],
+      countries: story.countries,
     });
   }, [storyId]);
 
@@ -123,8 +123,7 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
     title: formData.title,
     abstract: formData.preview,
     body: formData.content,
-    tags: formData.industryTags,
-          countries: formData.countries || [],
+    tags: [...formData.industryTags, ...(formData.countries || [])],
     file,
     fileType,
   };

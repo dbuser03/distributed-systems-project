@@ -57,7 +57,7 @@ export function useStoryFilters(stories: Story[]): UseStoryFiltersReturn {
 
     if (selectedCountries.length > 0) {
       result = result.filter((story) =>
-        selectedCountries.includes(story.country)
+        selectedCountries.some((country) => story.countries.includes(country))
       );
     }
 

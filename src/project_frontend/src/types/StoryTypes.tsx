@@ -34,7 +34,9 @@ export type Story = {
   publishedAt: BigInt | null;
   // ISIC sections - industries
   industryTags: ISICSectionKey[];
-  country: CountryCode;
+  countries: CountryCode[];
+
+  files?: StoryFile[];
 
   publisherId: string;
 
