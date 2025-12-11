@@ -50,7 +50,7 @@ function StoryHeader({ story }: StoryHeaderProps) {
         {story.industryTags && story.industryTags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {story.industryTags.map((tag: ISICSectionKey) => (
-              <span key={tag} className="badge badge-secondary">
+              <span key={tag} className="badge badge-secondary badge-sm">
                 {ISICSections[tag]}
               </span>
             ))}
