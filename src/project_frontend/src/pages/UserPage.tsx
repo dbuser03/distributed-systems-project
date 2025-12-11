@@ -1,25 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
 
 import { useUserProfile } from "../hooks";
 import { UserHeader, StorySection } from "../components/layout/user";
 import { useAuth } from "../context/authContext";
 
-import { LoginRequired } from "../components/ui/LoginRequired";
 import { LoadingProfile } from "../components/ui/LoadingProfile";
 
 function UserPage() {
-  const { userProfile, isAuthenticated, login, actor } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  const { userProfile, isAuthenticated, actor } = useAuth();
 
   const [targetId, setTargetId] = useState("");
   const [selectedRole, setSelectedRole] = useState("Verifier");
   const [status, setStatus] = useState("");
+  const [viewedUserAlias, setViewedUserAlias] = useState<string>("");
+  const [viewedUserRole, setViewedUserRole] = useState<string>("");
 
-  const currentUserId = userProfile?.principal.toText();
-  const profile = useUserProfile(currentUserId);
+  const targetUserId = id;
+
+  const profile = useUserProfile(targetUserId);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!targetUserId || !actor) return;
+
+      try {
+        const principal = Principal.fromText(targetUserId);
+        const profileResult = await actor.getUserProfile(principal);
+        if ("ok" in profileResult) {
+          setViewedUserAlias(profileResult.ok.alias);
+          const roleVariant = profileResult.ok.role;
+          if (!roleVariant) {
+            setViewedUserRole("Guest");
+          } else if ("Admin" in roleVariant) {
+            setViewedUserRole("Admin");
+          } else if ("Verifier" in roleVariant) {
+            setViewedUserRole("Verifier");
+          } else {
+            setViewedUserRole("User");
+          }
+        }
+      } catch (error) {
+        console.warn("Could not fetch user info:", error);
+        setViewedUserAlias(targetUserId);
+        setViewedUserRole("Guest");
+      }
+    };
+
+    fetchUserInfo();
+  }, [targetUserId, actor]);
 
   const handlePromote = async () => {
-    if (!actor || !targetId) return;
+    if (!actor || !targetId || !isAuthenticated) return;
     setStatus("Processing...");
     try {
       const principal = Principal.fromText(targetId);
@@ -39,28 +73,36 @@ function UserPage() {
     }
   };
 
-  if (!isAuthenticated) {
-    return <LoginRequired login={login} />;
+  if (!targetUserId) {
+    return (
+      <div className="min-h-full p-8 flex flex-col items-center">
+        Invalid user ID
+      </div>
+    );
   }
 
-  if (!profile || !userProfile) {
+  if (!profile) {
     return <LoadingProfile />;
   }
 
   const { userId, threadsCreated, contributions, credibilityScore } = profile;
+  const isViewingSelf =
+    isAuthenticated && userProfile && userProfile.principal.toText() === userId;
+  const canManageRoles =
+    isAuthenticated && userProfile && userProfile.role === "Admin";
 
   return (
     <div className="min-h-full p-8 flex flex-col items-center">
       <div className="w-full max-w-5xl">
         <UserHeader
-          userId={userProfile.alias}
-          credibilityScore={userProfile.credibilityScore}
+          userId={viewedUserAlias || userId}
+          credibilityScore={credibilityScore}
           threadCount={threadsCreated.length}
           contributionCount={contributions.length}
-          role={userProfile.role}
+          role={viewedUserRole}
         />
 
-        {userProfile.role === "Admin" && (
+        {canManageRoles && (
           <div className="bg-gray-100 p-6 rounded-lg mb-6 border border-gray-300">
             <h3 className="font-bold text-lg mb-4">Admin: Manage Roles</h3>
             <div className="flex flex-col md:flex-row gap-4">
@@ -92,15 +134,23 @@ function UserPage() {
 
         <div className="space-y-6">
           <StorySection
-            title="My Threads"
+            title={isViewingSelf ? "My Threads" : "Threads"}
             stories={threadsCreated}
-            emptyMessage="You haven't created any threads yet."
+            emptyMessage={
+              isViewingSelf
+                ? "You haven't created any threads yet."
+                : "This user hasn't created any threads yet."
+            }
           />
 
           <StorySection
-            title="My Comments"
+            title={isViewingSelf ? "My Comments" : "Comments"}
             stories={contributions}
-            emptyMessage="You haven't commented on any threads yet."
+            emptyMessage={
+              isViewingSelf
+                ? "You haven't commented on any threads yet."
+                : "This user hasn't commented on any threads yet."
+            }
           />
         </div>
       </div>

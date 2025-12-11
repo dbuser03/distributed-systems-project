@@ -8,6 +8,7 @@ import Principal "mo:base/Principal";
 import DummyData "dummy_data";
 import DocumentStore "../Services/document_store";
 import ReverseIndexes "../Services/reverse_indexes";
+import UserLogic "../Services/user_logic";
 
 module {
     public type Thread = Types.Thread;
@@ -41,7 +42,7 @@ module {
             id = dummyPrincipal;
             alias = "anonymous";
             role = #User;
-            credibilityScore = 0;
+            credibilityScore = 50;
             isBanned = false;
             createdAt = Time.now();
             threads = [];
@@ -98,6 +99,7 @@ module {
                     threadsStore.put(tid, thread);
                     ReverseIndexes.updateScoreOfThread(scoreIndexHash, seed.likes - seed.dislikes, tid);
                     ReverseIndexes.indexThreadTags(tagIndex, seed.tags, tid);
+                    await UserLogic.addUserThread(users, newDummyPrincipal(), tid);
 
                     for (cText in seed.comments.vals()) {
                         let input : CommentInput = {
@@ -105,12 +107,21 @@ module {
                             body = cText;
                         };
 
-                        ignore await DocumentStore.createComment(
-                            threadsStore,
-                            commentsStore,
-                            dummyPrincipal,
-                            input,
-                        );
+                        switch (
+                            await DocumentStore.createComment(
+                                threadsStore,
+                                commentsStore,
+                                dummyPrincipal,
+                                input,
+                            )
+                        ) {
+                            case (#err(_)) {
+
+                            };
+                            case (#ok(cid)) {
+                                await UserLogic.addUserComment(users, newDummyPrincipal(), cid);
+                            };
+                        };
                     };
                 };
 
