@@ -108,6 +108,12 @@ defining the structure of the project, dependecies and intial UI skeleton we cou
 I also integrated mock data for parallel development with the backend, as well as imlemented
 different components for the frontend and documentation.
 
+\subsection*{Syrine Dhrif}
+
+My contribution focused on extending the backend logic to support richer tracking of user interactions with threads and comments. I updated the \texttt{User} type in \texttt{types.mo} by adding new fields to store the threads a user created, the comments they posted, and the threads they liked or disliked. These additions allowed the system to maintain a more complete interaction history for each user. I also implemented two new functions in \texttt{forum.mo}. The first, \texttt{getUserThreads}, retrieves all threads created by a specific user by validating their identity, extracting their stored thread IDs, and returning the corresponding thread objects. The second, \texttt{hasUserLikedOrDisliked}, checks whether a user has liked or disliked a specific post by analyzing the newly introduced interaction arrays. Throughout this work, I ensured th
+
+
+
 \section*{Challenges Faced}
 
 \subsection*{Alessio Barletta}
@@ -139,6 +145,16 @@ return types.
      integrate them with the frontend and backend.
     \item \textbf{Backend Integration}: Understand how to properly interact with the backend through the generated Candid interface.
 \end{itemize}
+\subsection*{Syrine Dhrif}
+\begin{itemize}
+    \item \textbf{Maintaining consistency across multiple data structures}: Updating the User record with several new fields required careful coordination with existing thread and comment logic.
+    \item \textbf{Navigating Motoko’s typing and pattern matching}: Implementing functions like \texttt{getUserThreads} and \texttt{hasUserLikedOrDisliked} required understanding variant types and error-handling in Motoko.
+    \item \textbf{Understanding backend validation and ban checks}: Integrating with \texttt{getUserAndCheckBan} and thread retrieval logic required reversing the flow of existing controller code.
+    \item \textbf{Ensuring frontend compatibility}: Returning data in a format that frontend hooks could interpret required iterative debugging and testing.
+\end{itemize}
+
+
+
 
 
 \vspace{1em}
