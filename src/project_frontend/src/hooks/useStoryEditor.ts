@@ -82,20 +82,8 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
   }, []);
 
   // Validation
-  const canSaveDraft = Boolean(formData.title && formData.content);
   const canPublish = Boolean(
     formData.title && formData.content && formData.preview
-  );
-
-  // Actions
-  const handleSaveDraft = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!canSaveDraft) return;
-      // TODO: Implement save draft logic
-      console.log("Saving draft:", formData);
-    },
-    [formData, canSaveDraft]
   );
 
   const handlePublish = useCallback(
@@ -160,9 +148,7 @@ export function useStoryEditor(storyId?: string, actor?: ForumActor | null) {
     updateField,
     addTag,
     removeTag,
-    canSaveDraft,
     canPublish,
-    handleSaveDraft,
     handlePublish,
     handleCancel,
   };

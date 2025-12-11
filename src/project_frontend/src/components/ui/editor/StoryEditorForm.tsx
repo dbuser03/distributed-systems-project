@@ -7,7 +7,6 @@ import { ISICSectionKey } from "../../../types";
 
 interface StoryEditorFormProps {
   formData: StoryFormData;
-  canSaveDraft: boolean;
   canPublish: boolean;
   onUpdateField: <K extends keyof StoryFormData>(
     field: K,
@@ -15,19 +14,16 @@ interface StoryEditorFormProps {
   ) => void;
   onAddTag: (tag: string) => void;
   onRemoveTag: (tag: ISICSectionKey) => void;
-  onSaveDraft: (e: React.FormEvent) => void;
   onPublish: (e: React.FormEvent) => void;
   onCancel: () => void;
 }
 
 export function StoryEditorForm({
   formData,
-  canSaveDraft,
   canPublish,
   onUpdateField,
   onAddTag,
   onRemoveTag,
-  onSaveDraft,
   onPublish,
   onCancel,
 }: StoryEditorFormProps) {
@@ -100,9 +96,7 @@ export function StoryEditorForm({
       />
 
       <EditorActions
-        canSaveDraft={canSaveDraft}
         canPublish={canPublish}
-        onSaveDraft={onSaveDraft}
         onPublish={onPublish}
         onCancel={onCancel}
       />

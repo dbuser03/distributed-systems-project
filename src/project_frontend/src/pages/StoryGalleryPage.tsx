@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Story } from "../types";
 
 import { useAuth } from "../context/authContext";
+import { useVoteContext } from "../context/voteContext";
 
 import {
   StoryLink,
@@ -20,6 +21,7 @@ function StoryGalleryPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { actor } = useAuth();
+  const { loadUserVotes } = useVoteContext();
 
   useEffect(() => {
     const fetchThreads = async () => {
@@ -27,22 +29,21 @@ function StoryGalleryPage() {
         setIsLoading(true);
         console.log("Fetching threads from Forum canister...");
 
-
         const rawThreads = await actor.getThreadsByScore(0n, 50n);
-
-        const threadIDs = extractIDs(rawThreads)
-
-        const userInteractionsRaw = await actor.getUserFeedbackOnThreads(threadIDs);
-
-        const userInteractions = "err" in userInteractionsRaw
-          ? []
-          : userInteractionsRaw;
-
-        console.log(userInteractions);
-
         const adaptedStories = (rawThreads as unknown as BackendThread[]).map(adaptThreadToStory);
 
         setStories(adaptedStories);
+
+        // Carica i voti dell'utente per tutti i thread
+        const threadIDs = extractIDs(rawThreads as unknown as BackendThread[]);
+        const threadsForVotes = adaptedStories.map((s) => ({
+          id: s.id,
+          upvotes: s.upvotes,
+          downvotes: s.downvotes,
+        }));
+        
+        await loadUserVotes(threadIDs, threadsForVotes);
+
       } catch (error) {
         console.error("Error in loading threads:", error);
       } finally {
@@ -51,7 +52,8 @@ function StoryGalleryPage() {
     };
 
     fetchThreads();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actor]);
 
 
   const {

@@ -18,9 +18,7 @@ function StoryEditorPage() {
     updateField,
     addTag,
     removeTag,
-    canSaveDraft,
     canPublish,
-    handleSaveDraft,
     handlePublish,
     handleCancel,
   } = useStoryEditor(id, actor);
@@ -57,12 +55,10 @@ function StoryEditorPage() {
 
         <StoryEditorForm
           formData={formData}
-          canSaveDraft={canSaveDraft}
           canPublish={canPublish}
           onUpdateField={updateField}
           onAddTag={addTag}
           onRemoveTag={removeTag}
-          onSaveDraft={handleSaveDraft}
           onPublish={handlePublish}
           onCancel={handleCancel}
         />

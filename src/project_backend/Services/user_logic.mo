@@ -192,14 +192,16 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
+                // Rimuovi sempre dai dislikes se presente
                 let cleanedDislikes = if (containsThreadId(u.dislikedThreads, threadId)) {
                     removeThreadId(u.dislikedThreads, threadId);
                 } else {
                     u.dislikedThreads;
                 };
 
+                // Toggle: se già presente nei likes, rimuovi; altrimenti aggiungi
                 let cleanedLikes = if (containsThreadId(u.likedThreads, threadId)) {
-                    u.likedThreads;
+                    removeThreadId(u.likedThreads, threadId);
                 } else {
                     Array.append(u.likedThreads, [threadId]);
                 };
@@ -223,15 +225,16 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
-
+                // Rimuovi sempre dai likes se presente
                 let cleanedLikes = if (containsThreadId(u.likedThreads, threadId)) {
                     removeThreadId(u.likedThreads, threadId);
                 } else {
                     u.likedThreads;
                 };
 
+                // Toggle: se già presente nei dislikes, rimuovi; altrimenti aggiungi
                 let cleanedDislikes = if (containsThreadId(u.dislikedThreads, threadId)) {
-                    u.dislikedThreads;
+                    removeThreadId(u.dislikedThreads, threadId);
                 } else {
                     Array.append(u.dislikedThreads, [threadId]);
                 };
@@ -255,13 +258,16 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
+                // Rimuovi sempre dai dislikes se presente
                 let cleanedDislikes = if (containsCommentId(u.dislikedComments, commentId)) {
                     removeCommentId(u.dislikedComments, commentId);
                 } else {
                     u.dislikedComments;
                 };
+                
+                // Toggle: se già presente nei likes, rimuovi; altrimenti aggiungi
                 let cleanedLikes = if (containsCommentId(u.likedComments, commentId)) {
-                    u.likedComments;
+                    removeCommentId(u.likedComments, commentId);
                 } else {
                     Array.append(u.likedComments, [commentId]);
                 };
@@ -285,17 +291,16 @@ module {
     ) : async () {
         switch (users.get(userId)) {
             case (?u) {
-
-                // Remove from likedComments if present
+                // Rimuovi sempre dai likes se presente
                 let cleanedLikes = if (containsCommentId(u.likedComments, commentId)) {
                     removeCommentId(u.likedComments, commentId);
                 } else {
                     u.likedComments;
                 };
 
-                // Add to dislikedComments if missing
+                // Toggle: se già presente nei dislikes, rimuovi; altrimenti aggiungi
                 let cleanedDislikes = if (containsCommentId(u.dislikedComments, commentId)) {
-                    u.dislikedComments;
+                    removeCommentId(u.dislikedComments, commentId);
                 } else {
                     Array.append(u.dislikedComments, [commentId]);
                 };
